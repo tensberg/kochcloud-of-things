@@ -1,2 +1,4 @@
 .pio
 secrets.h
+secrets.py
+__pycache__

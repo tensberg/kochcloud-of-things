@@ -1,7 +1,19 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": "gateway-robot"
+		},
+		{
+			"path": "zisternensensor"
+		},
+		{
+			"path": "robot-gateway"
+		},
+		{
+			"path": "stromzaehler"
+		},
+		{
+			"path": "libraries"
 		}
 	],
 	"settings": {}

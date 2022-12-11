@@ -1,0 +1,12 @@
+{
+    "name": "kot-common",
+    "version": "0.0.2",
+    "description": "kochcloud of things common library",
+    "license": "MIT",
+    "dependencies": {
+        "fabianoriccardi/RTCMemory": "2.0.0",
+        "LittleFS(esp8266)": "0.1.0"
+    },
+    "frameworks": "arduino",
+    "platforms": [ "espressif8266" ]
+}
