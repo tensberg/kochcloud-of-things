@@ -4,16 +4,15 @@
 #include "meterreader.h"
 #include "iopins.h"
 #include "leds.h"
-#include "meterdisplay.h"
 #include "log.h"
 #include "persistentstatus.h"
 #include "messagesender.h"
 
-#define SLEEP_BETWEEN_MEASUREMENTS_MICROS 10E6
+#define SLEEP_BETWEEN_MEASUREMENTS_MILLIS 60E6
 
 // reader configuration
-MeterReader readerHaushalt(RX_READER_HAUSHALT);
-MeterReader readerWaerme(RX_READER_WAERME);
+MeterReader readerHaushalt(RX_READER_HAUSHALT, VCC_READER_HAUSHALT);
+MeterReader readerWaerme(RX_READER_WAERME, VCC_READER_WAERME);
 StromzaehlerMessage message;
 
 boolean continuousMode;
@@ -55,7 +54,6 @@ void setup()
   log("Starting Stromzaehler");
 
   initPersistentDeviceStatus(message.status);
-  initDisplay();
   initEspNowSender();
   continuousMode = readButton();
   message.continuousMode = continuousMode;
@@ -91,14 +89,13 @@ void loop()
   updateReadingResult(message.dataWaerme, reading, success);
   signalSuccess(LED_STATUS_WAERME, success);
 
-  updateDisplay(message);
   bool messageSent = sendDataEspNow((uint8_t *)&message, sizeof(message));
 
-  updateAndSaveStatus(message.status, messageSent, continuousMode ? 0 : SLEEP_BETWEEN_MEASUREMENTS_MICROS);
+  updateAndSaveStatus(message.status, messageSent, continuousMode ? 0 : SLEEP_BETWEEN_MEASUREMENTS_MILLIS);
 
   if (!continuousMode)
   {
     log("Sleep until next measurement");
-    ESP.deepSleep(SLEEP_BETWEEN_MEASUREMENTS_MICROS);
+    ESP.deepSleep(SLEEP_BETWEEN_MEASUREMENTS_MILLIS);
   }
 }

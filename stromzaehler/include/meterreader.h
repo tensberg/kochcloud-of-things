@@ -2,20 +2,23 @@
 
 #include <SoftwareSerial.h>
 
-typedef struct {
+typedef struct
+{
     double powerSumWh;
     double powerCurrentW;
 } MeterReading;
 
-class MeterReader {
-    public:
-        MeterReader(int rxPin);
+class MeterReader
+{
+public:
+    MeterReader(int rxPin, int vccPin);
 
-        boolean read(int timeoutMs, MeterReading& reading);
+    boolean read(int timeoutMs, MeterReading &reading);
 
-    private:
-        SoftwareSerial input;
+private:
+    int vccPin;
+    SoftwareSerial input;
 
-        boolean processByte(unsigned char b, MeterReading& reading);
-        void processListend(MeterReading& reading);
+    boolean processByte(unsigned char b, MeterReading &reading);
+    void processListend(MeterReading &reading);
 };
