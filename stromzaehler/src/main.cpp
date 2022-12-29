@@ -8,7 +8,8 @@
 #include "persistentstatus.h"
 #include "messagesender.h"
 
-#define SLEEP_BETWEEN_MEASUREMENTS_MILLIS 60E6
+#define METER_READ_TIMEOUT_MILLIS 5E3
+#define SLEEP_BETWEEN_MEASUREMENTS_MICROS 60E6
 
 // reader configuration
 MeterReader readerHaushalt(RX_READER_HAUSHALT, VCC_READER_HAUSHALT);
@@ -61,6 +62,8 @@ void setup()
   if (continuousMode)
   {
     signalContinuousMode();
+    readerHaushalt.setup(LED_STATUS_HAUSHALT);
+    readerWaerme.setup(LED_STATUS_WAERME);
   }
 }
 
@@ -79,23 +82,22 @@ void loop()
   boolean success;
   MeterReading reading;
 
-  message.status.iteration++;
   log("reading haushalt");
-  success = readerHaushalt.read(1000, reading);
+  success = readerHaushalt.read(METER_READ_TIMEOUT_MILLIS, reading);
   updateReadingResult(message.dataHaushalt, reading, success);
   signalSuccess(LED_STATUS_HAUSHALT, success);
   log("reading waerme");
-  success = readerWaerme.read(1000, reading);
+  success = readerWaerme.read(METER_READ_TIMEOUT_MILLIS, reading);
   updateReadingResult(message.dataWaerme, reading, success);
   signalSuccess(LED_STATUS_WAERME, success);
 
   bool messageSent = sendDataEspNow((uint8_t *)&message, sizeof(message));
 
-  updateAndSaveStatus(message.status, messageSent, continuousMode ? 0 : SLEEP_BETWEEN_MEASUREMENTS_MILLIS);
+  updateAndSaveStatus(message.status, messageSent, continuousMode ? 0 : SLEEP_BETWEEN_MEASUREMENTS_MICROS);
 
   if (!continuousMode)
   {
     log("Sleep until next measurement");
-    ESP.deepSleep(SLEEP_BETWEEN_MEASUREMENTS_MILLIS);
+    ESP.deepSleep(SLEEP_BETWEEN_MEASUREMENTS_MICROS);
   }
 }

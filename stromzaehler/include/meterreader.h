@@ -13,6 +13,7 @@ class MeterReader
 public:
     MeterReader(int rxPin, int vccPin);
 
+    void setup(int ledPin);
     boolean read(int timeoutMs, MeterReading &reading);
 
 private:

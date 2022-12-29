@@ -7,6 +7,8 @@
 #define OBIS_POWER_SUM_WH 0
 #define OBIS_POWER_CURRENT_W 1
 
+#define SETUP_BYTES 150
+
 typedef struct
 {
   const unsigned char message[6];
@@ -14,7 +16,7 @@ typedef struct
 
 const Obis OBIS[] = {
     {0x01, 0x00, 0x01, 0x08, 0x00, 0xff}, // powerSumWh
-    {0x01, 0x00, 0x01, 0x08, 0x00, 0xff}  // powerCurrentW
+    {0x01, 0x00, 0x10, 0x07, 0x00, 0xff}  // powerCurrentW
 };
 
 MeterReader::MeterReader(int rxPin, int vccPin)
@@ -23,22 +25,58 @@ MeterReader::MeterReader(int rxPin, int vccPin)
   pinMode(vccPin, OUTPUT);
   digitalWrite(vccPin, LOW);
   this->vccPin = vccPin;
-  this->input.begin(9600, SWSERIAL_8N1, rxPin, -1, false, 0, 95);
+  this->input.begin(9600, SWSERIAL_8N1, rxPin, -1, false, 100, 0);
   this->input.enableRx(true);
   this->input.enableTx(false);
+}
+
+void MeterReader::setup(int ledPin)
+{
+  log("starting meter setup");
+  digitalWrite(ledPin, HIGH);
+  digitalWrite(vccPin, HIGH);
+
+  this->input.listen();
+  this->input.flush();
+
+  int bytesRead = 0;
+
+  while (bytesRead < SETUP_BYTES)
+  {
+    while (!this->input.available())
+    {
+      delay(10);
+    }
+    digitalWrite(ledPin, LOW);
+    int b;
+    while (bytesRead < SETUP_BYTES && (b = this->input.read()) != -1)
+    {
+      bytesRead++;
+      logHex(b, bytesRead % 10 == 0);
+    }
+    digitalWrite(ledPin, HIGH);
+  }
+
+  digitalWrite(vccPin, LOW);
+  digitalWrite(ledPin, LOW);
+  log("meter setup finished");
 }
 
 boolean MeterReader::read(int timeoutMs, MeterReading &reading)
 {
   bool messageRead = false;
 
+  reading.powerCurrentW = 0;
+  reading.powerSumWh = 0;
+
   digitalWrite(vccPin, HIGH);
-  unsigned long timeoutEnd = millis() + timeoutMs;
   this->input.listen();
+  this->input.flush();
+  unsigned long timeoutEnd = millis() + timeoutMs;
 
   while (millis() < timeoutEnd)
   {
-    unsigned char b = this->input.read();
+    int b = this->input.read();
     if (b == -1)
     {
       delay(10);
@@ -51,6 +89,7 @@ boolean MeterReader::read(int timeoutMs, MeterReading &reading)
         messageRead = true;
         break;
       }
+      yield();
     }
   }
 
@@ -69,6 +108,7 @@ boolean MeterReader::processByte(unsigned char b, MeterReading &reading)
 
   case SML_LISTEND:
     log(">>> Successfully received listend");
+      this->processListend(reading);
     break;
 
   case SML_FINAL:

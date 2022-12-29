@@ -30,7 +30,7 @@ void MessageDevice<T>::handleReceivedMessage() {
         return;
     }
 
-    StaticJsonDocument<200> json;
+    StaticJsonDocument<400> json;
     this->createJson(json);
     mqttPublish(this->topic, json);
     this->messageReceived = false;
@@ -38,10 +38,10 @@ void MessageDevice<T>::handleReceivedMessage() {
 
 void appendStatus(JsonDocument& json, DeviceStatus status) {
     JsonObject jsonStatus = json.createNestedObject("status");
-    jsonStatus["iteration"] = status.iteration;
-    jsonStatus["activeTime"] = status.activeTimeS;
-    jsonStatus["sleepTime"] = status.sleepTimeS;
-    jsonStatus["sendFailed"] = status.sendFailedCount;
+    jsonStatus["it"] = status.iteration;
+    jsonStatus["a"] = status.activeTimeS;
+    jsonStatus["s"] = status.sleepTimeS;
+    jsonStatus["f"] = status.sendFailedCount;
 }
 
 void appendIfSet(JsonObject& json, const char* key, double value) {
@@ -59,7 +59,7 @@ void appendIfSet(JsonObject& json, const char* key, uint8_t value) {
 void appendStromzaehlerData(JsonObject& json, const char* key, StromzaehlerData& data) {
     JsonObject jsonData = json.createNestedObject(key);
     if (data.readSuccess) {
-        JsonObject power = json.createNestedObject("power");
+        JsonObject power = jsonData.createNestedObject("power");
         power["sum"] = data.powerSumWh;
         power["cur"] = data.powerCurrentW;
     } else {
@@ -69,7 +69,7 @@ void appendStromzaehlerData(JsonObject& json, const char* key, StromzaehlerData&
 
 void StromzaehlerDevice::createJson(JsonDocument& json) {
     JsonObject data = json.createNestedObject("data");
-    data["continuous"] = message.continuousMode;
+    data["c"] = message.continuousMode;
     appendStromzaehlerData(data, "haushalt", message.dataHaushalt);
     appendStromzaehlerData(data, "waerme", message.dataWaerme);
     appendStatus(json, message.status);
