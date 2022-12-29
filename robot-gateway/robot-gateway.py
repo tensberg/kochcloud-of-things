@@ -5,8 +5,9 @@ from enum import Enum, IntEnum
 import paho.mqtt.client as mqtt
 import json
 import msgpack
+import os
 
-SERIAL_PORT = '/dev/ttyUSB0'
+SERIAL_PORT = os.environ.get('GATEWAY_ROBOT_SERIAL_PORT', '/dev/ttyUSB0')
 
 MQTT_SERVER = 'kochcloud.local'
 MQTT_USERNAME = 'robot-gateway'
@@ -71,6 +72,7 @@ def send_reset_to_robot():
 
 def init_serial_transfer():
     global transfer
+    print('connecting to serial port {}'.format(SERIAL_PORT))
     transfer = SerialTransfer.SerialTransfer(SERIAL_PORT)
     
     transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler, subscribe_robot_message_handler])

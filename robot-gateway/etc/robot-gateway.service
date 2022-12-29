@@ -1,0 +1,16 @@
+[Unit]
+Description=robot-gateway
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/default/robot-gateway
+ExecStart=/usr/bin/python3 /opt/kochcloud-of-things/robot-gateway/robot-gateway.py
+WorkingDirectory=/opt/kochcloud-of-things/robot-gateway
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=10
+User=robotgateway
+
+[Install]
+WantedBy=multi-user.target

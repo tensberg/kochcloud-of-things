@@ -1,0 +1,4 @@
+# symlink usb-serial devices by port to which they are attached
+# see https://blog.oddbit.com/post/2022-02-13-wemos-udev-rules/
+SUBSYSTEMS=="usb", ATTRS{busnum}=="?*", ENV{.USB_BUSNUM}="$attr{busnum}", ENV{.USB_DEVPATH}="$attr{devpath}"
+SUBSYSTEMS=="usb-serial", SYMLINK+="usbserial/$env{.USB_BUSNUM}/$env{.USB_DEVPATH}"
