@@ -1,5 +1,4 @@
 import time
-from secrets import MQTT_PASSWORD
 from pySerialTransfer import pySerialTransfer as SerialTransfer
 from enum import Enum, IntEnum
 import paho.mqtt.client as mqtt
@@ -13,6 +12,7 @@ MQTT_SERVER = 'kochcloud.local'
 MQTT_USERNAME = 'robot-gateway'
 MQTT_CLIENT = 'robot-gateway'
 MQTT_ROOT_TOPIC = 'gateway-robot/devices/'
+MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD')
 
 transfer = None
 mqttc = None
