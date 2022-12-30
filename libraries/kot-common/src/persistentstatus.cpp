@@ -1,5 +1,3 @@
-#include <RTCMemory.h>
-
 #include "persistentstatus.h"
 #include "log.h"
 

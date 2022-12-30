@@ -82,5 +82,4 @@ void ZisternensensorDevice::createJson(JsonDocument& json) {
     appendIfSet(data, "pressure", message.data.pressure);
     appendIfSet(data, "distance", message.data.distance);
     appendStatus(json, message.status);
-    mqttPublish("zisternensensor", json);
 }

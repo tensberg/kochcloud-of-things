@@ -1,6 +1,6 @@
 {
     "name": "kot-common",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "kochcloud of things common library",
     "license": "MIT",
     "dependencies": {
@@ -8,5 +8,6 @@
         "LittleFS(esp8266)": "0.1.0"
     },
     "frameworks": "arduino",
-    "platforms": [ "espressif8266" ]
+    "platforms": [ "espressif8266" ],
+    "headers": ["log.h", "messagesender.h", "persistentstatus.h"]
 }

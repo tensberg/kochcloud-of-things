@@ -31,6 +31,7 @@ void espNowDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
         if (memcmp(mac, device->macAddress, MAC_ADDRESS_LEN) == 0)
         {
             device->receiveMessage(incomingData, len);
+            break;
         }
     }
 }

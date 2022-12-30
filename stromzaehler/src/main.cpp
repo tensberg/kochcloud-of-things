@@ -6,7 +6,7 @@
 #include "leds.h"
 #include "log.h"
 #include "persistentstatus.h"
-#include "messagesender.h"
+#include <messagesender.h>
 
 #define METER_READ_TIMEOUT_MILLIS 5E3
 #define SLEEP_BETWEEN_MEASUREMENTS_MICROS 60E6
@@ -49,13 +49,40 @@ void updateReadingResult(StromzaehlerData &data, const MeterReading &reading, bo
   }
 }
 
+void handleInitEspNowSenderResult(int result) {
+  switch (result) {
+    case ESPNOW_OK:
+      break;
+    
+    case ESPNOW_ERR_INIT_FAILED:
+      ledSignal(true, false, 3, 250, 250);
+      break;
+
+    case ESPNOW_ERR_PAIRING_FAILED:
+      ledSignal(false, true, 2, 500, 500);
+      break;
+
+    case ESPNOW_ERR_REGISTER_CB_FAILED:
+      ledSignal(false, true, 3, 500, 500);
+      break;
+
+    default:
+      ledSignal(false, true, 4, 500, 500);
+  }
+
+  if (result != ESPNOW_OK) {
+      ESP.deepSleep(5000);
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
   log("Starting Stromzaehler");
 
   initPersistentDeviceStatus(message.status);
-  initEspNowSender();
+  int result = initEspNowSender();
+  handleInitEspNowSenderResult(result);
   continuousMode = readButton();
   message.continuousMode = continuousMode;
   initLeds();

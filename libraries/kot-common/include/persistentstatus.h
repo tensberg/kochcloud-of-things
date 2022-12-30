@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RTCMemory.h>
+
 #include "devicestatus.h"
 
 void initPersistentDeviceStatus(DeviceStatus &deviceStatus);

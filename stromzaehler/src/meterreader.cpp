@@ -114,6 +114,9 @@ boolean MeterReader::processByte(unsigned char b, MeterReading &reading)
   case SML_FINAL:
     log(">>> Successfully received a complete message!");
     return true;
+
+  default:
+    break;
   }
 
   return false;
