@@ -73,7 +73,7 @@ def send_reset_to_robot():
 def init_serial_transfer():
     global transfer
     print('connecting to serial port {}'.format(SERIAL_PORT))
-    transfer = SerialTransfer.SerialTransfer(SERIAL_PORT)
+    transfer = SerialTransfer.SerialTransfer(SERIAL_PORT, restrict_ports=False)
     
     transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler, subscribe_robot_message_handler])
     transfer.open()
