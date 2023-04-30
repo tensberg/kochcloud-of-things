@@ -31,8 +31,8 @@ def publish_robot_message_handler():
     payload = transfer.rx_obj(obj_type=list, start_pos = rec_size, obj_byte_size = payload_length, list_format='B')
     rec_size += payload_length
     print('received publish message from robot for topic {}'.format(topic))
-    messageBody = json.dumps(msgpack.unpackb(bytes(payload)))
-    mqttc.publish(MQTT_ROOT_TOPIC + topic, messageBody)
+    message_body = json.dumps(msgpack.unpackb(bytes(payload)))
+    mqtt_publish(topic, message_body)
 
 def subscribe_robot_message_handler():
     rec_size = 0
@@ -74,9 +74,13 @@ def init_serial_transfer():
     global transfer
     print('connecting to serial port {}'.format(SERIAL_PORT))
     transfer = SerialTransfer.SerialTransfer(SERIAL_PORT, restrict_ports=False)
-    
+
     transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler, subscribe_robot_message_handler])
     transfer.open()
+
+def mqtt_publish(topic, message_body):
+    mi = mqttc.publish(MQTT_ROOT_TOPIC + topic, message_body)
+    mi.wait_for_publish()
 
 def mqtt_connect_handler(client, userdata, flags, rc):
     print('connected to MQTT server with result code {}'.format(rc))
