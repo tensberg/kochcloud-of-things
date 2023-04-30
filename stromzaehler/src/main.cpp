@@ -9,7 +9,7 @@
 #include <messagesender.h>
 
 #define METER_READ_TIMEOUT_MILLIS 5E3
-#define SLEEP_BETWEEN_MEASUREMENTS_MICROS 60E6
+#define SLEEP_BETWEEN_MEASUREMENTS_MICROS 5*60E6
 
 // reader configuration
 MeterReader readerHaushalt(RX_READER_HAUSHALT, VCC_READER_HAUSHALT);
