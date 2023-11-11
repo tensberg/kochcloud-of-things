@@ -8,11 +8,11 @@ import os
 
 SERIAL_PORT = os.environ.get('GATEWAY_ROBOT_SERIAL_PORT', '/dev/ttyUSB0')
 
-MQTT_SERVER = 'kochcloud.local'
-MQTT_USERNAME = 'robot-gateway'
-MQTT_CLIENT = 'robot-gateway'
-MQTT_ROOT_TOPIC = 'gateway-robot/devices/'
-MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD')
+MQTT_SERVER = os.environ.get('MQTT_SERVER', 'localhost')
+MQTT_USERNAME = os.environ.get('MQTT_USERNAME', 'robot-gateway')
+MQTT_CLIENT = os.environ.get('MQTT_CLIENT', 'robot-gateway')
+MQTT_ROOT_TOPIC = os.environ.get('MQTT_ROOT_TOPIC', 'gateway-robot/devices/')
+MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD') # no default value
 
 transfer = None
 mqttc = None
@@ -76,14 +76,19 @@ def init_serial_transfer():
     transfer = SerialTransfer.SerialTransfer(SERIAL_PORT, restrict_ports=False)
 
     transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler, subscribe_robot_message_handler])
-    transfer.open()
+    success = transfer.open()
+    if not success:
+        raise Exception('failed to connect to serial port {}'.format(SERIAL_PORT))
 
 def mqtt_publish(topic, message_body):
     mi = mqttc.publish(MQTT_ROOT_TOPIC + topic, message_body)
     mi.wait_for_publish()
 
 def mqtt_connect_handler(client, userdata, flags, rc):
-    print('connected to MQTT server with result code {}'.format(rc))
+    if rc != 0:
+        raise Exception('failed to connect to MQTT server with result code {}'.format(rc))
+
+    print('connected to MQTT server')
     send_reset_to_robot()
 
 def mqtt_message_handler(client, userdata, msg):
