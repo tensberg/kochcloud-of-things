@@ -49,14 +49,22 @@ void initDisplay()
   reader.loadBMP("/eyes.bmp", img);
 }
 
+void fillScreen(uint16_t color)
+{
+  tft.fillScreen(color);
+}
+
 void drawImage()
 {
   img.draw(tft, 0, 0);
 }
 
-void drawText(const char *text, uint16_t color)
+void drawText(const char *text, uint16_t color, int16_t x, int16_t y)
 {
-  tft.setCursor(0, tft.height() - 8);
+  if (x >= 0 && y >= 0)
+  {
+    tft.setCursor(x, y);    
+  }
   tft.setTextColor(color);
   tft.setTextWrap(true);
   tft.print(text);

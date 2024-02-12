@@ -71,12 +71,19 @@ def send_reset_to_robot():
     transfer.open()
 
 def send_message_to_robot(topic, message_body):
-    print(message_body)
+    try:
+        message_body_bytes = msgpack.packb(json.loads(message_body))
+    except:
+        print('failed to pack message body as msgpacked JSON for topic {}'.format(topic))
+        return
+
     rec_size = transfer.tx_obj(len(topic), 0, val_type_override='B')
     rec_size = transfer.tx_obj(topic, rec_size)
-    rec_size = transfer.tx_obj(len(message_body), rec_size, val_type_override='B')
-    rec_size = transfer.tx_obj(message_body, rec_size, val_type_override='%ds' % len(message_body))
-    transfer.send(rec_size, GatewayToRobotMessageType.MESSAGE)
+    rec_size = transfer.tx_obj(len(message_body_bytes), rec_size, val_type_override='B')
+    rec_size = transfer.tx_obj(message_body_bytes, rec_size, val_type_override='%ds' % len(message_body_bytes))
+    success = transfer.send(rec_size, GatewayToRobotMessageType.MESSAGE)
+    if not success:
+        print('failed to transfer message to robot for topic {}'.format(topic))
 
 def init_serial_transfer():
     global transfer
@@ -106,8 +113,9 @@ def mqtt_message_handler(client, userdata, msg):
 
 def init_mqtt():
     global mqttc
-    mqttc = mqtt.Client(client_id='robot-gateway')
+    mqttc = mqtt.Client(client_id=MQTT_CLIENT)
     mqttc.on_connect = mqtt_connect_handler
+    mqttc.on_disconnect = lambda client, userdata, rc: print('disconnected from MQTT server with result code {}'.format(rc))
     mqttc.on_message = mqtt_message_handler
     mqttc.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqttc.connect(MQTT_SERVER)

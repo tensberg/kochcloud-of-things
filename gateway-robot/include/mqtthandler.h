@@ -2,6 +2,6 @@
 
 #include "mqttserial.h"
 
-#define SUBSCRIPTIONS_LEN 1
+#define SUBSCRIPTIONS_LEN 2
 
 extern MqttSubscription subscriptions[];
