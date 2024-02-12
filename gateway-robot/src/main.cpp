@@ -23,7 +23,7 @@ void setup()
     initEspNowReceiver();
     initMqttSerial(subscriptions, SUBSCRIPTIONS_LEN);
 
-    drawImage();
+    drawEyes();
     setBacklight(255);
 }
 

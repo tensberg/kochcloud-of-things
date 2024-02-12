@@ -33,7 +33,7 @@ SD Card    -  NodeMCU
 SdFat SD;                        // SD card filesystem
 Adafruit_ImageReader reader(SD); // Image-reader object, pass in SD filesys
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-Adafruit_Image img; // An image loaded into RAM
+Adafruit_Image eyes; // An image loaded into RAM
 
 void initDisplay()
 {
@@ -45,8 +45,8 @@ void initDisplay()
   tft.fillScreen(ST77XX_BLACK);
 
   // initialize SD card
-  SD.begin(SD_CS, SD_SCK_MHZ(10));
-  reader.loadBMP("/eyes.bmp", img);
+  SD.begin(SD_CS, SD_SCK_MHZ(25));
+  reader.loadBMP("/eyes.bmp", eyes);
 }
 
 void fillScreen(uint16_t color)
@@ -54,9 +54,24 @@ void fillScreen(uint16_t color)
   tft.fillScreen(color);
 }
 
-void drawImage()
+void drawEyes()
 {
-  img.draw(tft, 0, 0);
+  eyes.draw(tft, 0, 0);
+}
+
+void drawImage(const char *image_name, int16_t x, int16_t y)
+{
+  if (strcmp(image_name, "eyes") == 0)
+  {
+    eyes.draw(tft, x, y);
+  }
+  else 
+  {
+    char image_filename[sizeof(image_name) + 5];
+    sprintf(image_filename, "/%s.bmp", image_name);
+
+    reader.drawBMP(image_filename, tft, x, y, true);
+  }
 }
 
 void drawText(const char *text, uint16_t color, int16_t x, int16_t y)

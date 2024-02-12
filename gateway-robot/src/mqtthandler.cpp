@@ -56,8 +56,23 @@ void handleScreen(const char* topic, const byte* payload, uint16_t length)
     }
     if (json.containsKey("i")) 
     {
-        // TODO: make image configurable
-        drawImage();
+        const char* image = json["i"];
+        int16_t x = 0;
+        if (json.containsKey("x"))
+        {
+            x = json["x"];
+        }
+        int16_t y = 0;
+        if (json.containsKey("y"))
+        {
+            y = json["y"];
+        }
+        drawImage(image, x, y);
+    }
+    if (json.containsKey("b")) 
+    {
+        uint8_t brightness = json["b"];
+        setBacklight(brightness);
     }
 }
 
