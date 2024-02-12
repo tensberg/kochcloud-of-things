@@ -2,6 +2,8 @@
 
 #include <SerialTransfer.h>
 
+#include "leds.h"
+
 enum RobotToGatewayMessageType
 {
     INIT,
@@ -42,6 +44,7 @@ void mqttPublish(const char *topic, byte *payload, uint8_t length)
     sendSize = transfer.txObj(length, sendSize);
     sendSize = transfer.txObj(*payload, sendSize, length);
     transfer.sendData(sendSize, PUBLISH);
+    blinkLed(MQTT_STATUS_LED, 1);
 }
 
 void mqttPublish(const char *topic, JsonDocument& json) {
@@ -54,6 +57,7 @@ void mqttSendCommand(RobotToGatewayMessageType messageType)
 {
     transfer.txObj('0'); // dummy data because SerialTransfer packets must contain at least 1 byte
     transfer.sendData(1, messageType);
+    blinkLed(MQTT_STATUS_LED, 1);
 }
 
 void mqttInit()
@@ -104,9 +108,12 @@ void handleMessage()
     {
         if (strncmp(topic, mqttSerialSubscriptions[i].topic, topicLength) == 0)
         {
+            blinkLed(MQTT_STATUS_LED, 1);
             mqttSerialSubscriptions[i].handler(topic, payload, payloadLength);
             break;
         }
+
+        blinkLed(MQTT_STATUS_LED, 2); // notify topic not found
     }
 }
 

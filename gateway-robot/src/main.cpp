@@ -2,23 +2,13 @@
 
 #include <espnow.h>
 #include <ESP8266WiFi.h>
-#include <Adafruit_ST7735.h>
+#include <TimeOut.h>
 
 #include "mqttserial.h"
+#include "mqtthandler.h"
 #include "messagereceiver.h"
 #include "leds.h"
 #include "robotdisplay.h"
-
-#define GATEWAY_ROBOT_TOPIC "gateway-robot"
-
-
-void subscriptionHandler(const char* topic, const byte* payload, uint16_t length) {
-
-}
-
-#define SUBSCRIPTIONS_LEN 1
-
-MqttSubscription subscriptions[] = { { GATEWAY_ROBOT_TOPIC, subscriptionHandler } };
 
 void setup() 
 {
@@ -27,24 +17,20 @@ void setup()
     delay(1000); 
 
     initLeds();
+    setLeds(ALL_LEDS_ON);
+
     initDisplay();
     initEspNowReceiver();
     initMqttSerial(subscriptions, SUBSCRIPTIONS_LEN);
 
-    for (int i = 1; i <= NUM_LEDS; i++)
-    {
-        setLed(i, true);
-        delay(100);
-    }
-
     drawImage();
-    drawText("Hello, world!", ST77XX_BLACK);
-
     setBacklight(255);
 }
 
 void loop() 
 {
+    TimeOut::handler();
+    Interval::handler();
     mqttSerialTick();
     espNowProcessReceivedMessages();
     delay(10);

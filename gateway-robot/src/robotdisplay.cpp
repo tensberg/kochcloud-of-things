@@ -56,7 +56,7 @@ void drawImage()
 
 void drawText(const char *text, uint16_t color)
 {
-  tft.setCursor(0, 0);
+  tft.setCursor(0, tft.height() - 8);
   tft.setTextColor(color);
   tft.setTextWrap(true);
   tft.print(text);

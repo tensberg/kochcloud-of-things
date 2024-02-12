@@ -40,9 +40,9 @@ def subscribe_robot_message_handler():
     rec_size += SerialTransfer.STRUCT_FORMAT_LENGTHS['B']
     topic = transfer.rx_obj(obj_type=str, start_pos = rec_size, obj_byte_size = topic_length)
 
-    print('received subscribe message for topic {} from robot'.format(topic))
+    print('received subscribe message for topic "{}" from robot'.format(topic))
     send_ack_to_robot()
-    mqttc.subscribe(topic)
+    mqttc.subscribe(MQTT_ROOT_TOPIC + topic)
 
 class RobotToGatewayMessageType(Enum):
     INIT = init_robot_message_handler
@@ -70,6 +70,14 @@ def send_reset_to_robot():
     time.sleep(0.5)
     transfer.open()
 
+def send_message_to_robot(topic, message_body):
+    print(message_body)
+    rec_size = transfer.tx_obj(len(topic), 0, val_type_override='B')
+    rec_size = transfer.tx_obj(topic, rec_size)
+    rec_size = transfer.tx_obj(len(message_body), rec_size, val_type_override='B')
+    rec_size = transfer.tx_obj(message_body, rec_size, val_type_override='%ds' % len(message_body))
+    transfer.send(rec_size, GatewayToRobotMessageType.MESSAGE)
+
 def init_serial_transfer():
     global transfer
     print('connecting to serial port {}'.format(SERIAL_PORT))
@@ -92,7 +100,9 @@ def mqtt_connect_handler(client, userdata, flags, rc):
     send_reset_to_robot()
 
 def mqtt_message_handler(client, userdata, msg):
-    print('received message from MQTT server for topic {}'.format(msg.topic))
+    topic = msg.topic[len(MQTT_ROOT_TOPIC):]
+    print('received message from MQTT server for topic {}'.format(topic))
+    send_message_to_robot(topic, msg.payload)
 
 def init_mqtt():
     global mqttc
