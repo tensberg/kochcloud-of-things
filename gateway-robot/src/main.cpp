@@ -25,6 +25,7 @@ void setup()
 
     drawEyes();
     setBacklight(255);
+    publishDisplayState();
 }
 
 void loop() 

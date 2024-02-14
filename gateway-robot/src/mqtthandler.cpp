@@ -6,12 +6,13 @@
 
 #include "robotdisplay.h"
 
+#define MESSAGE_TOPIC "message"
+#define DISPLAY_TOPIC "display"
+#define DISPLAY_STATE_TOPIC "display/state"
+
 #define TEXT_BUFFER_SIZE 100
 
 char text_buffer[TEXT_BUFFER_SIZE];
-
-#define MESSAGE_TOPIC "message"
-#define SCREEN_TOPIC "screen"
 
 void handleMessage(const char* topic, const byte* payload, uint16_t length) 
 {
@@ -43,7 +44,7 @@ void handleMessage(const char* topic, const byte* payload, uint16_t length)
     drawText(message, color, x, y);
 }
 
-void handleScreen(const char* topic, const byte* payload, uint16_t length)
+void handleDisplay(const char* topic, const byte* payload, uint16_t length)
 {
     // deserialize msgpack-encoded payload to JsonDocument 
     StaticJsonDocument<400> json;
@@ -74,10 +75,23 @@ void handleScreen(const char* topic, const byte* payload, uint16_t length)
         uint8_t brightness = json["b"];
         setBacklight(brightness);
     }
+    publishDisplayState();
+}
+
+void publishDisplayState()
+{
+  StaticJsonDocument<400> json;
+  if (strlen(displayState.image_name) > 0) 
+  {
+    json["i"] = displayState.image_name;
+  }
+  json["b"] = displayState.backlight;
+  json["c"] = displayState.color;
+  mqttPublish(DISPLAY_STATE_TOPIC, json);
 }
 
 MqttSubscription subscriptions[] = 
 { 
     { MESSAGE_TOPIC, handleMessage },
-    { SCREEN_TOPIC, handleScreen }
+    { DISPLAY_TOPIC, handleDisplay }
 };

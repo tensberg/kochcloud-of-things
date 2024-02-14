@@ -35,28 +35,44 @@ Adafruit_ImageReader reader(SD); // Image-reader object, pass in SD filesys
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Adafruit_Image eyes; // An image loaded into RAM
 
+DisplayState displayState;
+
+void setImageName(const char* image_name)
+{
+  strlcpy(displayState.image_name, image_name, sizeof(displayState.image_name));
+}
+
+void resetImageName() 
+{
+  displayState.image_name[0] = '\0';
+}
+
 void initDisplay()
 {
   // initialize TFT display
   pinMode(TFT_LED, OUTPUT);
-  analogWrite(TFT_LED, 0);   // turn off backlight
+  setBacklight(0);           // turn off backlight
   tft.initR(INITR_BLACKTAB); // Initialize screen
   tft.setRotation(1);
-  tft.fillScreen(ST77XX_BLACK);
+  fillScreen(ST77XX_BLACK);
 
   // initialize SD card
   SD.begin(SD_CS, SD_SCK_MHZ(25));
   reader.loadBMP("/eyes.bmp", eyes);
+  resetImageName();
 }
 
 void fillScreen(uint16_t color)
 {
   tft.fillScreen(color);
+  displayState.color = color;
+  resetImageName();
 }
 
 void drawEyes()
 {
   eyes.draw(tft, 0, 0);
+  setImageName("eyes");
 }
 
 void drawImage(const char *image_name, int16_t x, int16_t y)
@@ -64,13 +80,18 @@ void drawImage(const char *image_name, int16_t x, int16_t y)
   if (strcmp(image_name, "eyes") == 0)
   {
     eyes.draw(tft, x, y);
+    setImageName("eyes");
   }
   else 
   {
-    char image_filename[sizeof(image_name) + 5];
+    char image_filename[strlen(image_name) + 5];
     sprintf(image_filename, "/%s.bmp", image_name);
 
-    reader.drawBMP(image_filename, tft, x, y, true);
+    ImageReturnCode result = reader.drawBMP(image_filename, tft, x, y, true);
+    if (result == IMAGE_SUCCESS)
+    {
+      setImageName(image_name);
+    }
   }
 }
 
@@ -88,4 +109,5 @@ void drawText(const char *text, uint16_t color, int16_t x, int16_t y)
 void setBacklight(uint8_t brightness)
 {
   analogWrite(TFT_LED, brightness);
+  displayState.backlight = brightness;
 }
