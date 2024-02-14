@@ -10,6 +10,7 @@
 #include "shared/messages/stromzaehler.h"
 #include "shared/messages/zisternensensor.h"
 #include "log.h"
+#include "leds.h"
 
 #define MAC_ADDRESS_LEN 6
 #define DEVICE_LEN 2
@@ -31,8 +32,10 @@ void espNowDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
         if (memcmp(mac, device->macAddress, MAC_ADDRESS_LEN) == 0)
         {
             device->receiveMessage(incomingData, len);
+            blinkLed(ESP_NOW_STATUS_LED, 1);
             break;
         }
+        blinkLed(ESP_NOW_STATUS_LED, 2); // notify that a message was received from an unknown device
     }
 }
 
