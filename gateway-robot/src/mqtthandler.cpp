@@ -5,10 +5,13 @@
 #include <ArduinoJson.h>
 
 #include "robotdisplay.h"
+#include "leds.h"
 
 #define MESSAGE_TOPIC "message"
 #define DISPLAY_TOPIC "display"
 #define DISPLAY_STATE_TOPIC "display/state"
+#define LEDS_TOPIC "leds"
+#define LEDS_STATE_TOPIC "leds/state"
 
 #define TEXT_BUFFER_SIZE 100
 
@@ -78,6 +81,31 @@ void handleDisplay(const char* topic, const byte* payload, uint16_t length)
     publishDisplayState();
 }
 
+void updateLedState(JsonDocument& json, const char* key, uint8_t led)
+{
+    if (json.containsKey(key))
+    {
+        setLed(led, json[key]);
+    }
+}
+
+void handleLeds(const char* topic, const byte* payload, uint16_t length) 
+{
+    // deserialize msgpack-encoded payload to JsonDocument 
+    StaticJsonDocument<400> json;
+    deserializeMsgPack(json, payload, (size_t) length);
+
+    updateLedState(json, "u1", USER_1_LED);
+    updateLedState(json, "u2", USER_2_LED);
+    updateLedState(json, "u3", USER_3_LED);
+
+    if (json.containsKey("g"))
+    {
+        setGlobalLedState(json["g"]);
+    }
+    publishLedState();
+}
+
 void publishDisplayState()
 {
   StaticJsonDocument<400> json;
@@ -90,8 +118,21 @@ void publishDisplayState()
   mqttPublish(DISPLAY_STATE_TOPIC, json);
 }
 
+void publishLedState()
+{
+  StaticJsonDocument<400> json;
+
+  json["u1"] = getLed(USER_1_LED);
+  json["u2"] = getLed(USER_2_LED);
+  json["u3"] = getLed(USER_3_LED);
+  json["g"] = getGlobalLedState();
+
+  mqttPublish(LEDS_STATE_TOPIC, json);
+}
+
 MqttSubscription subscriptions[] = 
 { 
     { MESSAGE_TOPIC, handleMessage },
-    { DISPLAY_TOPIC, handleDisplay }
+    { DISPLAY_TOPIC, handleDisplay },
+    { LEDS_TOPIC, handleLeds }
 };

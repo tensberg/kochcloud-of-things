@@ -2,8 +2,9 @@
 
 #include "mqttserial.h"
 
-#define SUBSCRIPTIONS_LEN 2
+#define SUBSCRIPTIONS_LEN 3
 
 extern MqttSubscription subscriptions[];
 
 void publishDisplayState();
+void publishLedState();

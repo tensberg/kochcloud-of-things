@@ -5,6 +5,9 @@
 #define LED_ON true
 #define LED_OFF false
 
+#define USER_1_LED 1
+#define USER_2_LED 2
+#define USER_3_LED 3
 #define MQTT_STATUS_LED 4
 #define ESP_NOW_STATUS_LED 5
 
@@ -18,6 +21,8 @@ void initLeds();
  */
 void setLed(int led, boolean on);
 
+boolean getLed(int led);
+
 void setLeds(uint8_t state);
 
 void toggleLed(int led);
@@ -25,3 +30,5 @@ void toggleLed(int led);
 void blinkLed(int led, int cycles);
 
 void setGlobalLedState(boolean on);
+
+boolean getGlobalLedState();

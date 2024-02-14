@@ -4,6 +4,8 @@
 
 #include <TimeOut.h>
 
+#include "mqtthandler.h"
+
 /* NodeMCU to M54HC595 PIN Connections
 
 M54HC595  -  NodeMCU
@@ -83,6 +85,11 @@ void setGlobalLedState(boolean on)
     }
 }
 
+boolean getGlobalLedState()
+{
+    return global_led_state;
+}
+
 void setLed(int led, boolean on)
 {
     if (led < 1 || led > NUM_LEDS)
@@ -100,6 +107,16 @@ void setLed(int led, boolean on)
     }
 
     updateShiftRegister(led_state);
+}
+
+boolean getLed(int led)
+{
+    if (led < 1 || led > NUM_LEDS)
+    {
+        return false;
+    }
+
+    return (led_state >> led) & 1;
 }
 
 void setLeds(uint8_t state)
