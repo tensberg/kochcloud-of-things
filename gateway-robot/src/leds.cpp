@@ -143,7 +143,7 @@ void blinkLed(int led, int cycles)
         return;
     }
 
-    int cycle_adjustment = led_blink_repetitions[led - 1] % 1;
+    int cycle_adjustment = led_blink_repetitions[led - 1] % 2;
 
     led_blink_repetitions[led - 1] = cycles * 2 + cycle_adjustment;
 }
