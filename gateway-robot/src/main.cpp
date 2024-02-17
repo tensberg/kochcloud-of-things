@@ -17,7 +17,7 @@ void setup()
     delay(1000); 
 
     initLeds();
-    setLeds(ALL_LEDS_ON);
+    setLeds(STATUS_LEDS_ON);
 
     initDisplay();
     initEspNowReceiver();

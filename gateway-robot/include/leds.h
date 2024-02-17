@@ -13,6 +13,7 @@
 
 #define NUM_LEDS 5
 #define ALL_LEDS_ON ((1 << NUM_LEDS) - 1)
+#define STATUS_LEDS_ON 0b00011000
 
 void initLeds();
 
