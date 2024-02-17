@@ -11,6 +11,14 @@
             "program": "robot-gateway.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/robot-gateway-staging.env"
+        },
+        {
+            "name": "robot-gateway prod",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "robot-gateway.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/robot-gateway-prod.env"
         }
     ]
 }
