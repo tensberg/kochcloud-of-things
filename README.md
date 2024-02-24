@@ -12,15 +12,19 @@ Please don't take it as a reference.
 
 ## Projects
 
+![The Gateway Robot standing next to the Kochcloud.](doc/robot-gateway.jpg)
+<figcaption>The Gateway Robot standing next to the Kochcloud.</figcaption>
+
 ### gateway-robot
 
-The Gateway Robot acts as the gateway between the sensor devices and the MQTT server which is used to publish the data to OpenHAB.
+The ESP8266 Gateway Robot acts as the gateway between the sensor devices and the MQTT server which is used to publish the data to OpenHAB.
 It receives ESPNow messages from the devices, formats them in a JSON format suitable for publishing over MQTT and writes them on USB/Serial.
 
 ### robot-gateway
 
-The counterpart of the Gateway Robot running on a Raspberry PI.
+The counterpart of the Gateway Robot running on a Raspberry PI 4.
 Reads the messages from the Gateway Robot over USB/Serial and publishes them to the MQTT server.
+Also receives MQTT messages addressed to the gateway-robot and writes them on USB/Serial.
 
 ### stromzaehler
 
@@ -36,6 +40,8 @@ Read the fill level of our cistern using a distance sensor and also ambient temp
 
 ## Status
 
-Work in progress.
+Feature complete.
 
-Publishing messages from stromzaehler via Gateway Robot/Robot Gateway to MQTT is working.
+Publishing messages from stromzaehler and zisternensensor via Gateway Robot/Robot Gateway to MQTT is working.
+
+The robot-gateway display and LEDs can be controlled from OpenHAB via MQTT messages.
