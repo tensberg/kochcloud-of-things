@@ -17,6 +17,7 @@
 // environment sensor
 #define BME_I2C_ADDRESS 0x76
 Adafruit_BME280 bme;
+#define HUMIDITY_CALIBRATION -15.0
 
 // distance sensor
 // Define maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500 cm:
@@ -56,7 +57,7 @@ void measureData(ZisternensensorData &zsData)
 {
     zsData.temperature = bme.readTemperature();
     zsData.pressure = bme.readPressure() / 100.0F;
-    zsData.humidity = bme.readHumidity();
+    zsData.humidity = bme.readHumidity() + HUMIDITY_CALIBRATION;
     zsData.distance = 0; // sonar.convert_cm(sonar.ping_median());
 }
 
