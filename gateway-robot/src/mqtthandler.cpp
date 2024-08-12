@@ -6,12 +6,14 @@
 
 #include "robotdisplay.h"
 #include "leds.h"
+#include "thermometer.h"
 
 #define MESSAGE_TOPIC "message"
 #define DISPLAY_TOPIC "display"
 #define DISPLAY_STATE_TOPIC "display/state"
 #define LEDS_TOPIC "leds"
 #define LEDS_STATE_TOPIC "leds/state"
+#define THERMOMETER_TOPIC "thermometer"
 
 #define TEXT_BUFFER_SIZE 100
 
@@ -130,9 +132,24 @@ void publishLedState()
   mqttPublish(LEDS_STATE_TOPIC, json);
 }
 
+void handleThermometer(const char* topic, const byte* payload, uint16_t length)
+{
+    // deserialize msgpack-encoded payload to JsonDocument 
+    StaticJsonDocument<400> json;
+    deserializeMsgPack(json, payload, (size_t) length);
+
+    if (json.containsKey("l") && json.containsKey("t"))
+    {
+        Location location = json["l"];
+        float temperature = json["t"];
+        drawTemperature(round(temperature), location);
+    }
+}
+
 MqttSubscription subscriptions[] = 
 { 
     { MESSAGE_TOPIC, handleMessage },
     { DISPLAY_TOPIC, handleDisplay },
-    { LEDS_TOPIC, handleLeds }
+    { LEDS_TOPIC, handleLeds },
+    { THERMOMETER_TOPIC, handleThermometer }
 };

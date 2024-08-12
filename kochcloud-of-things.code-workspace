@@ -25,7 +25,8 @@
 			"limits": "cpp",
 			"sstream": "cpp",
 			"streambuf": "cpp",
-			"system_error": "cpp"
+			"system_error": "cpp",
+			"cmath": "cpp"
 		}
 	}
 }

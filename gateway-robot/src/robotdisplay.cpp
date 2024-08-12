@@ -34,7 +34,9 @@ SdFat SD;                        // SD card filesystem
 Adafruit_ImageReader reader(SD); // Image-reader object, pass in SD filesys
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Adafruit_Image eyes; // An image loaded into RAM
+Adafruit_Image gradient;
 
+int16_t gradientWidth;
 DisplayState displayState;
 
 void setImageName(const char* image_name)
@@ -59,6 +61,8 @@ void initDisplay()
   // initialize SD card
   SD.begin(SD_CS, SD_SCK_MHZ(25));
   reader.loadBMP("/eyes.bmp", eyes);
+  reader.loadBMP("/gradient.bmp", gradient);
+  gradientWidth = gradient.width();
   resetImageName();
 }
 
@@ -73,6 +77,10 @@ void drawEyes()
 {
   eyes.draw(tft, 0, 0);
   setImageName("eyes");
+}
+
+void drawGradient(int16_t x) {
+  gradient.draw(tft, x, 0);
 }
 
 void drawImage(const char *image_name, int16_t x, int16_t y)

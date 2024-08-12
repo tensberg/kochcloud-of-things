@@ -9,6 +9,7 @@
 #include "messagereceiver.h"
 #include "leds.h"
 #include "robotdisplay.h"
+#include "thermometer.h"
 
 void setup() 
 {
@@ -24,6 +25,7 @@ void setup()
     initMqttSerial(subscriptions, SUBSCRIPTIONS_LEN);
 
     drawEyes();
+    drawThermometerBackground();
     setBacklight(255);
     publishDisplayState();
     publishLedState();
