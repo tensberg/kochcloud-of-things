@@ -14,6 +14,7 @@
 #define LEDS_TOPIC "leds"
 #define LEDS_STATE_TOPIC "leds/state"
 #define THERMOMETER_TOPIC "thermometer"
+#define INITIALIZED_TOPIC "robot/initialized"
 
 #define TEXT_BUFFER_SIZE 100
 
@@ -107,6 +108,12 @@ void handleLeds(const char* topic, const byte* payload, uint16_t length)
         setGlobalLedState(json["g"]);
     }
     publishLedState();
+}
+
+void publishInitialized()
+{
+    StaticJsonDocument<400> json;
+    mqttPublish(INITIALIZED_TOPIC, json);
 }
 
 void publishDisplayState()

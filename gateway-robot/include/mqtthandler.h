@@ -6,5 +6,6 @@
 
 extern MqttSubscription subscriptions[];
 
+void publishInitialized();
 void publishDisplayState();
 void publishLedState();

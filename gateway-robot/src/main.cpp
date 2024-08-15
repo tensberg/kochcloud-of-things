@@ -28,6 +28,7 @@ void setup()
     drawEyes();
     drawThermometer();
     setBacklight(255);
+    publishInitialized();
     publishDisplayState();
     publishLedState();
 }
