@@ -80,6 +80,7 @@ void handleDisplay(const char* topic, const byte* payload, uint16_t length)
         uint8_t brightness = json["b"];
         setBacklight(brightness);
     }
+    drawThermometer();
     publishDisplayState();
 }
 
@@ -142,7 +143,32 @@ void handleThermometer(const char* topic, const byte* payload, uint16_t length)
     {
         Location location = json["l"];
         float temperature = json["t"];
-        drawTemperature(round(temperature), location);
+
+        float minTemperature = TEMPERATURE_UNDEFINED;
+        if (json.containsKey("min"))
+        {
+            minTemperature = json["min"];
+        }
+        float maxTemperature = TEMPERATURE_UNDEFINED;
+        if (json.containsKey("max"))
+        {
+            maxTemperature = json["max"];
+        }
+        float delta = 0;
+        if (json.containsKey("d"))
+        {
+            delta = json["d"];
+        }
+
+        setTemperature(location, temperature, minTemperature, maxTemperature, delta);
+    }
+    if (json.containsKey("r"))
+    {
+        JsonArray locations = json["r"].as<JsonArray>();
+        for (JsonVariant location : locations)
+        {
+            resetMinMaxTemperature(location);
+        }
     }
 }
 
@@ -152,4 +178,5 @@ MqttSubscription subscriptions[] =
     { DISPLAY_TOPIC, handleDisplay },
     { LEDS_TOPIC, handleLeds },
     { THERMOMETER_TOPIC, handleThermometer }
+    // when you add a subscription here, also increase the SUBSCRIPTIONS_LEN in mqtthandler.h
 };

@@ -56,6 +56,7 @@ void initDisplay()
   setBacklight(0);           // turn off backlight
   tft.initR(INITR_BLACKTAB); // Initialize screen
   tft.setRotation(1);
+  tft.cp437(true); // use corrected font table
   fillScreen(ST77XX_BLACK);
 
   // initialize SD card

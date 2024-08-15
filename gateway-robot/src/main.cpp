@@ -21,11 +21,12 @@ void setup()
     setLeds(STATUS_LEDS_ON);
 
     initDisplay();
+    initThermometer();
     initEspNowReceiver();
     initMqttSerial(subscriptions, SUBSCRIPTIONS_LEN);
 
     drawEyes();
-    drawThermometerBackground();
+    drawThermometer();
     setBacklight(255);
     publishDisplayState();
     publishLedState();

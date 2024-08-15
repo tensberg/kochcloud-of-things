@@ -4,5 +4,11 @@
 
 #include "robotdisplay.h"
 
-void drawThermometerBackground();
-void drawTemperature(int16_t temperature, Location location);
+#define TEMPERATURE_UNDEFINED -1000
+
+void initThermometer();
+void drawThermometer();
+void setTemperature(Location location, float temperature, float minTemperature = TEMPERATURE_UNDEFINED, float maxTemperature = TEMPERATURE_UNDEFINED, float delta = 0);
+void drawTemperature(Location location);
+void resetMinMaxTemperatures();
+void resetMinMaxTemperature(Location location);
