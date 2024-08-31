@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package robobuf;
+
+import "device_status.proto";
+
+message ZisternensensorData {
+    optional double temperature = 1;
+    optional double pressure = 2;
+    optional double humidity = 3;
+    optional uint32 distance = 4;
+}
+
+message ZisternensensorState {
+    ZisternensensorData data = 1;
+    DeviceStatus status = 2;
+}

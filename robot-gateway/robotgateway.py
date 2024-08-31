@@ -2,9 +2,10 @@ import time
 from pySerialTransfer import pySerialTransfer as SerialTransfer
 from enum import Enum, IntEnum
 import paho.mqtt.client as mqtt
-import json
-import msgpack
 import os
+from google.protobuf import json_format
+from caseconverter import kebabcase, snakecase
+from robobuf import gateway_to_robot_message_pb2, robot_to_gateway_message_pb2
 
 SERIAL_PORT = os.environ.get('GATEWAY_ROBOT_SERIAL_PORT', '/dev/ttyUSB0')
 
@@ -13,41 +14,43 @@ MQTT_USERNAME = os.environ.get('MQTT_USERNAME', 'robot-gateway')
 MQTT_CLIENT = os.environ.get('MQTT_CLIENT', 'robot-gateway')
 MQTT_ROOT_TOPIC = os.environ.get('MQTT_ROOT_TOPIC', 'gateway-robot/devices/')
 MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD') # no default value
+MQTT_INITIALIZED_TOPIC = "robot/initialized"
 
 transfer = None
 mqttc = None
 
 def init_robot_message_handler():
     print("received init message")
+    mqtt_subscribe()
+    mqtt_publish_initialized()
 
 def publish_robot_message_handler():
-    rec_size = 0
-    topic_length = transfer.rx_obj(obj_type='B', start_pos = rec_size)
-    rec_size += SerialTransfer.STRUCT_FORMAT_LENGTHS['B']
-    topic = transfer.rx_obj(obj_type=str, start_pos = rec_size, obj_byte_size = topic_length)
-    rec_size += topic_length
-    payload_length = transfer.rx_obj(obj_type='B', start_pos = rec_size)
-    rec_size += SerialTransfer.STRUCT_FORMAT_LENGTHS['B']
-    payload = transfer.rx_obj(obj_type=list, start_pos = rec_size, obj_byte_size = payload_length, list_format='B')
-    rec_size += payload_length
-    print('received publish message from robot for topic {}'.format(topic))
-    message_body = json.dumps(msgpack.unpackb(bytes(payload)))
-    mqtt_publish(topic, message_body)
+    try:
+        payload_length = transfer.rx_obj(obj_type='H', start_pos = 0)
+        rec_size = SerialTransfer.STRUCT_FORMAT_LENGTHS['H']
+        payload = transfer.rx_obj(obj_type=list, start_pos = rec_size, obj_byte_size = payload_length, list_format='B')
+        message = robot_to_gateway_message_pb2.RobotToGatewayMessage()
+        message.ParseFromString(bytes(payload))
+        message_type = message.WhichOneof('message')
+        topic = kebabcase(message_type).replace('-state', '/state')
+        message_body = json_format.MessageToJson(getattr(message, message_type), always_print_fields_with_no_presence=True)
+        print('received publish message from robot for topic {}'.format(topic))
+        mqtt_publish(topic, message_body)
+    except Exception as e:
+        print('failed to unpack message from robot: {}'.format(e))
 
-def subscribe_robot_message_handler():
-    rec_size = 0
-    topic_length = transfer.rx_obj(obj_type='B', start_pos = rec_size)
-    rec_size += SerialTransfer.STRUCT_FORMAT_LENGTHS['B']
-    topic = transfer.rx_obj(obj_type=str, start_pos = rec_size, obj_byte_size = topic_length)
-
-    print('received subscribe message for topic "{}" from robot'.format(topic))
-    send_ack_to_robot()
-    mqttc.subscribe(MQTT_ROOT_TOPIC + topic)
+def mqtt_subscribe():
+    message = gateway_to_robot_message_pb2.GatewayToRobotMessage()
+    fields = message.DESCRIPTOR.fields
+    # a MQTT topic corresponds to one of the fields in the GatewayToRobotMessage.message oneof
+    topics = [kebabcase(field.name) for field in fields if field.containing_oneof.name == 'message']
+    print('subscribing to MQTT topics "{}"'.format(topics))
+    for topic in topics:
+        mqttc.subscribe(MQTT_ROOT_TOPIC + topic)
 
 class RobotToGatewayMessageType(Enum):
     INIT = init_robot_message_handler
-    PUBLISH = publish_robot_message_handler
-    SUBSCRIBE = subscribe_robot_message_handler
+    MQTT_PUBLISH = publish_robot_message_handler
 
 class GatewayToRobotMessageType(IntEnum):
     ACK = 0
@@ -71,15 +74,20 @@ def send_reset_to_robot():
     transfer.open()
 
 def send_message_to_robot(topic, message_body):
+    gateway_to_robot = gateway_to_robot_message_pb2.GatewayToRobotMessage()
     try:
-        message_body_bytes = msgpack.packb(json.loads(message_body))
-    except:
-        print('failed to pack message body as msgpacked JSON for topic {}'.format(topic))
+        # a MQTT topic corresponds to one of the fields in the GatewayToRobotMessage.message oneof
+        message_attr = snakecase(topic)
+        message = getattr(gateway_to_robot, message_attr)
+        # the MQTT message body JSON string is converted to the corresponding protobuf message
+        json_format.Parse(message_body, message)
+    except Exception as e:
+        print('failed to pack message body protobuf for topic {}: {}'.format(topic, e))
         return
 
-    rec_size = transfer.tx_obj(len(topic), 0, val_type_override='B')
-    rec_size = transfer.tx_obj(topic, rec_size)
-    rec_size = transfer.tx_obj(len(message_body_bytes), rec_size, val_type_override='B')
+    # the serialized protobuf message is packed into a SerialTransfer packet and sent to the robot
+    message_body_bytes = gateway_to_robot.SerializeToString()
+    rec_size = transfer.tx_obj(len(message_body_bytes), 0, val_type_override='H')
     rec_size = transfer.tx_obj(message_body_bytes, rec_size, val_type_override='%ds' % len(message_body_bytes))
     success = transfer.send(rec_size, GatewayToRobotMessageType.MESSAGE)
     if not success:
@@ -90,10 +98,13 @@ def init_serial_transfer():
     print('connecting to serial port {}'.format(SERIAL_PORT))
     transfer = SerialTransfer.SerialTransfer(SERIAL_PORT, restrict_ports=False)
 
-    transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler, subscribe_robot_message_handler])
+    transfer.set_callbacks([init_robot_message_handler, publish_robot_message_handler])
     success = transfer.open()
     if not success:
         raise Exception('failed to connect to serial port {}'.format(SERIAL_PORT))
+
+def mqtt_publish_initialized():
+    mqtt_publish(MQTT_INITIALIZED_TOPIC, '{}')
 
 def mqtt_publish(topic, message_body):
     mi = mqttc.publish(MQTT_ROOT_TOPIC + topic, message_body)

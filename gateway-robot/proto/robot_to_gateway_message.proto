@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package robobuf;
+
+import "display_state.proto";
+import "led_state.proto";
+import "stromzaehler_state.proto";
+import "zisternensensor_state.proto";
+
+message RobotToGatewayMessage {
+    oneof message {
+        DisplayState display_state = 1;
+        LedState led_state = 2;
+        StromzaehlerState stromzaehler_state = 3;
+        ZisternensensorState zisternensensor_state = 4;
+    }
+}

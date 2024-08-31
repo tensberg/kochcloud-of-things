@@ -41,12 +41,12 @@ DisplayState displayState;
 
 void setImageName(const char* image_name)
 {
-  strlcpy(displayState.image_name, image_name, sizeof(displayState.image_name));
+  strlcpy(displayState.image, image_name, sizeof(displayState.image));
 }
 
 void resetImageName() 
 {
-  displayState.image_name[0] = '\0';
+  displayState.image[0] = '\0';
 }
 
 void initDisplay()
@@ -70,7 +70,7 @@ void initDisplay()
 void fillScreen(uint16_t color)
 {
   tft.fillScreen(color);
-  displayState.color = color;
+  displayState.background_color = color;
   resetImageName();
 }
 
@@ -118,5 +118,5 @@ void drawText(const char *text, uint16_t color, int16_t x, int16_t y)
 void setBacklight(uint8_t brightness)
 {
   analogWrite(TFT_LED, brightness);
-  displayState.backlight = brightness;
+  displayState.brightness = brightness;
 }

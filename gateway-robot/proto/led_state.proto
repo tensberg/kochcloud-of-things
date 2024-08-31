@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package robobuf;
+
+message LedState {
+    bool global = 1;
+    bool user1 = 2;
+    bool user2 = 3;
+    bool user3 = 4;
+}

@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package robobuf;
+
+message GatewayToRobotMessage {
+    oneof message {
+        ShowText show_text = 1;
+        Display display = 2;
+        Leds leds = 3;
+        Thermometer thermometer = 4;
+    }
+}
+
+message ShowText {
+    string text = 1;
+    optional uint32 color = 2;
+    optional uint32 x = 3;
+    optional uint32 y = 4;
+}
+
+message Display {
+    optional uint32 background_color = 1;
+    optional string image = 2;
+    uint32 x = 3;
+    uint32 y = 4;
+    optional uint32 brightness = 5;
+}
+
+message Leds {
+    optional bool global = 1;
+    optional bool user1 = 2;
+    optional bool user2 = 3;
+    optional bool user3 = 4;
+}
+
+enum ThermometerLocation {
+    UNSPECIFIED = 0;
+    LEFT = 1;
+    RIGHT = 2;
+}
+
+message Thermometer {
+    ThermometerLocation location = 1;
+    float temperature = 2;
+    optional float min_temperature = 3;
+    optional float max_temperature = 4;
+    float temperature_delta = 5;
+}

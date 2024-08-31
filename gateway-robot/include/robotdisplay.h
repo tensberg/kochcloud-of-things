@@ -9,9 +9,11 @@ enum Location {
 };
 
 typedef struct DisplayState {
-    char image_name[50];
-    uint8_t backlight;
-    uint16_t color;
+    uint16_t background_color;
+    char image[51];
+    uint8_t brightness;
+    uint16_t x;
+    uint16_t y;
 } DisplayState;
 
 void initDisplay();

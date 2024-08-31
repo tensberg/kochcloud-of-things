@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package robobuf;
+
+message DeviceStatus {
+    uint64 iteration = 1;
+    uint64 sleepTimeS = 2;
+    uint64 activeTimeS = 3;
+    uint32 sendFailedCount = 4;
+}

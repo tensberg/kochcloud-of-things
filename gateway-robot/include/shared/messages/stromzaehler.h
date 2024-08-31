@@ -3,7 +3,7 @@
 #include "devicestatus.h"
 
 typedef struct __attribute__((__packed__)) {
-    boolean readSuccess;
+    bool readSuccess;
     double powerSumWh;
     double powerCurrentW;
 } StromzaehlerData;

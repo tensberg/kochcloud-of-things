@@ -2,7 +2,6 @@
 
 #include <espnow.h>
 #include <ESP8266WiFi.h>
-#include <ArduinoJson.h>
 
 #include "messagereceiver.h"
 #include "messagehandler.h"

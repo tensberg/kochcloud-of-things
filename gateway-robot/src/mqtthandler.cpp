@@ -2,188 +2,140 @@
 
 #include <math.h>
 #include <Adafruit_ST7735.h>
-#include <ArduinoJson.h>
 
 #include "robotdisplay.h"
 #include "leds.h"
 #include "thermometer.h"
-
-#define MESSAGE_TOPIC "message"
-#define DISPLAY_TOPIC "display"
-#define DISPLAY_STATE_TOPIC "display/state"
-#define LEDS_TOPIC "leds"
-#define LEDS_STATE_TOPIC "leds/state"
-#define THERMOMETER_TOPIC "thermometer"
-#define INITIALIZED_TOPIC "robot/initialized"
+#include "robot_to_gateway_message.pb.h"
 
 #define TEXT_BUFFER_SIZE 100
 
 char text_buffer[TEXT_BUFFER_SIZE];
 
-void handleMessage(const char* topic, const byte* payload, uint16_t length) 
+void handleShowText(robobuf_ShowText& show_text) 
 {
-    // deserialize msgpack-encoded payload to JsonDocument 
-    StaticJsonDocument<400> json;
-    deserializeMsgPack(json, payload, (size_t) length);
-    
-    if (!json.containsKey("m")) 
-    {
-        return;
-    }
-    const char* message = json["m"];
-    uint16_t color = ST77XX_BLACK;
-    if (json.containsKey("c"))
-    {
-        color = json["c"];
-    }
-    int16_t x = -1;
-    if (json.containsKey("x"))
-    {
-        x = json["x"];
-    }
-    int16_t y = -1;
-    if (json.containsKey("y"))
-    {
-        y = json["y"];
-    }
-
-    drawText(message, color, x, y);
+    uint16_t color = show_text.has_color ? show_text.color : ST77XX_BLACK;
+    int16_t x = show_text.has_x ? show_text.x : -1;
+    int16_t y = show_text.has_y ? show_text.y : -1;
+    drawText(show_text.text, color, x, y);
 }
 
-void handleDisplay(const char* topic, const byte* payload, uint16_t length)
+void handleDisplay(robobuf_Display& display)
 {
-    // deserialize msgpack-encoded payload to JsonDocument 
-    StaticJsonDocument<400> json;
-    deserializeMsgPack(json, payload, (size_t) length);
-    
-    if (json.containsKey("c")) 
+    if (display.has_background_color) 
     {
-        uint16_t color = json["c"];
-        fillScreen(color);
+        fillScreen(display.background_color);
     }
-    if (json.containsKey("i")) 
+    if (display.has_image) 
     {
-        const char* image = json["i"];
-        int16_t x = 0;
-        if (json.containsKey("x"))
-        {
-            x = json["x"];
-        }
-        int16_t y = 0;
-        if (json.containsKey("y"))
-        {
-            y = json["y"];
-        }
-        drawImage(image, x, y);
+        drawImage(display.image, display.x, display.y);
     }
-    if (json.containsKey("b")) 
+    if (display.has_brightness) 
     {
-        uint8_t brightness = json["b"];
-        setBacklight(brightness);
+        setBacklight(display.brightness);
     }
     drawThermometer();
     publishDisplayState();
 }
 
-void updateLedState(JsonDocument& json, const char* key, uint8_t led)
+void handleLeds(robobuf_Leds& leds) 
 {
-    if (json.containsKey(key))
+    if (leds.has_user1)
     {
-        setLed(led, json[key]);
+        setLed(USER_1_LED, leds.user1);
     }
-}
-
-void handleLeds(const char* topic, const byte* payload, uint16_t length) 
-{
-    // deserialize msgpack-encoded payload to JsonDocument 
-    StaticJsonDocument<400> json;
-    deserializeMsgPack(json, payload, (size_t) length);
-
-    updateLedState(json, "u1", USER_1_LED);
-    updateLedState(json, "u2", USER_2_LED);
-    updateLedState(json, "u3", USER_3_LED);
-
-    if (json.containsKey("g"))
+    if (leds.has_user2)
     {
-        setGlobalLedState(json["g"]);
+        setLed(USER_2_LED, leds.user2);
+    }
+    if (leds.has_user3)
+    {
+        setLed(USER_3_LED, leds.user3);
+    }
+
+    if (leds.has_global)
+    {
+        setGlobalLedState(leds.global);
     }
     publishLedState();
 }
 
-void publishInitialized()
+void handleThermometer(robobuf_Thermometer& thermometer)
 {
-    StaticJsonDocument<400> json;
-    mqttPublish(INITIALIZED_TOPIC, json);
+    Location location;
+    switch (thermometer.location) {
+        case robobuf_ThermometerLocation_LEFT:
+            location = LEFT;
+            break;
+        
+        case robobuf_ThermometerLocation_RIGHT:
+            location = RIGHT;
+            break;
+
+        default:
+            return;
+    }
+
+    float minTemperature = TEMPERATURE_UNDEFINED;
+    if (thermometer.has_min_temperature)
+    {
+        minTemperature = thermometer.min_temperature;
+    }
+    float maxTemperature = TEMPERATURE_UNDEFINED;
+    if (thermometer.has_max_temperature)
+    {
+        maxTemperature = thermometer.max_temperature;
+    }
+
+    setTemperature(location, thermometer.temperature, minTemperature, maxTemperature, thermometer.temperature_delta);
+}
+
+bool handleMessage(robobuf_GatewayToRobotMessage& message)
+{
+    switch (message.which_message) {
+        case robobuf_GatewayToRobotMessage_show_text_tag:
+            handleShowText(message.message.show_text);
+            return true;
+        
+        case robobuf_GatewayToRobotMessage_display_tag:
+            handleDisplay(message.message.display);
+            return true;
+        
+        case robobuf_GatewayToRobotMessage_leds_tag:
+            handleLeds(message.message.leds);
+            return true;
+        
+        case robobuf_GatewayToRobotMessage_thermometer_tag:
+            handleThermometer(message.message.thermometer);
+            return true;
+        
+        default:
+            return false;
+    }
 }
 
 void publishDisplayState()
 {
-  StaticJsonDocument<400> json;
-  if (strlen(displayState.image_name) > 0) 
-  {
-    json["i"] = displayState.image_name;
-  }
-  json["b"] = displayState.backlight;
-  json["c"] = displayState.color;
-  mqttPublish(DISPLAY_STATE_TOPIC, json);
+    robobuf_RobotToGatewayMessage message = robobuf_RobotToGatewayMessage_init_zero;
+    message.which_message = robobuf_RobotToGatewayMessage_display_state_tag;
+    message.message.display_state.brightness = displayState.brightness;
+    message.message.display_state.background_color = displayState.background_color;
+    if (displayState.image[0] != '\0') 
+    {
+        strlcpy(message.message.display_state.image, displayState.image, sizeof(message.message.display_state.image));
+        message.message.display_state.has_image = true;
+    }
+    mqttPublish(message);
 }
 
 void publishLedState()
 {
-  StaticJsonDocument<400> json;
+    robobuf_RobotToGatewayMessage message = robobuf_RobotToGatewayMessage_init_zero;
+    message.which_message = robobuf_RobotToGatewayMessage_led_state_tag;
+    message.message.led_state.global = getGlobalLedState();
+    message.message.led_state.user1 = getLed(USER_1_LED);
+    message.message.led_state.user2 = getLed(USER_2_LED);
+    message.message.led_state.user3 = getLed(USER_3_LED);
 
-  json["u1"] = getLed(USER_1_LED);
-  json["u2"] = getLed(USER_2_LED);
-  json["u3"] = getLed(USER_3_LED);
-  json["g"] = getGlobalLedState();
-
-  mqttPublish(LEDS_STATE_TOPIC, json);
+    mqttPublish(message);
 }
-
-void handleThermometer(const char* topic, const byte* payload, uint16_t length)
-{
-    // deserialize msgpack-encoded payload to JsonDocument 
-    StaticJsonDocument<400> json;
-    deserializeMsgPack(json, payload, (size_t) length);
-
-    if (json.containsKey("l") && json.containsKey("t"))
-    {
-        Location location = json["l"];
-        float temperature = json["t"];
-
-        float minTemperature = TEMPERATURE_UNDEFINED;
-        if (json.containsKey("min"))
-        {
-            minTemperature = json["min"];
-        }
-        float maxTemperature = TEMPERATURE_UNDEFINED;
-        if (json.containsKey("max"))
-        {
-            maxTemperature = json["max"];
-        }
-        float delta = 0;
-        if (json.containsKey("d"))
-        {
-            delta = json["d"];
-        }
-
-        setTemperature(location, temperature, minTemperature, maxTemperature, delta);
-    }
-    if (json.containsKey("r"))
-    {
-        JsonArray locations = json["r"].as<JsonArray>();
-        for (JsonVariant location : locations)
-        {
-            resetMinMaxTemperature(location);
-        }
-    }
-}
-
-MqttSubscription subscriptions[] = 
-{ 
-    { MESSAGE_TOPIC, handleMessage },
-    { DISPLAY_TOPIC, handleDisplay },
-    { LEDS_TOPIC, handleLeds },
-    { THERMOMETER_TOPIC, handleThermometer }
-    // when you add a subscription here, also increase the SUBSCRIPTIONS_LEN in mqtthandler.h
-};

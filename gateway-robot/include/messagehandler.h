@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <ArduinoJson.h>
 
 #include "shared/messages/stromzaehler.h"
 #include "shared/messages/zisternensensor.h"
+#include "robot_to_gateway_message.pb.h"
 
 class Device {
     public:
@@ -23,11 +23,11 @@ class MessageDevice: public Device {
         void handleReceivedMessage();
     
     protected:
-        virtual void createJson(JsonDocument& json) = 0;
+        virtual void createMqttMessage(robobuf_RobotToGatewayMessage& mqttMessage) = 0;
         T message;
 
     private:
-        boolean messageReceived;
+        bool messageReceived;
 };
 
 class StromzaehlerDevice : public MessageDevice<StromzaehlerMessage> {
@@ -35,7 +35,7 @@ class StromzaehlerDevice : public MessageDevice<StromzaehlerMessage> {
         StromzaehlerDevice(const uint8_t* macAddress, const char* topic) : MessageDevice(macAddress, topic) {};
 
     protected:
-        void createJson(JsonDocument& json);
+        void createMqttMessage(robobuf_RobotToGatewayMessage& mqttMessage);
 };
 
 class ZisternensensorDevice: public MessageDevice<ZisternensensorMessage> {
@@ -43,5 +43,5 @@ class ZisternensensorDevice: public MessageDevice<ZisternensensorMessage> {
         ZisternensensorDevice(const uint8_t* macAddress, const char* topic) : MessageDevice(macAddress, topic) {};
 
     protected:
-        void createJson(JsonDocument& json);
+        void createMqttMessage(robobuf_RobotToGatewayMessage& mqttMessage);
 };

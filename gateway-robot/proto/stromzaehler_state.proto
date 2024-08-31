@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package robobuf;
+
+import "device_status.proto";
+
+message PowerData {
+    double sumWh = 1;
+    double currentW = 2;
+}
+
+message StromzaehlerData {
+    PowerData power = 1;
+}
+
+message StromzaehlerConfig {
+    bool continuousMode = 1;
+}
+
+message StromzaehlerState {
+    DeviceStatus status = 1;
+    StromzaehlerConfig config = 2;
+    StromzaehlerData haushalt = 3;
+    StromzaehlerData waerme = 4;
+}

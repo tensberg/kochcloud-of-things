@@ -1,7 +1,16 @@
+proto_path = ../gateway-robot/proto
+
 init:
 	pip install -r requirements.txt
 
-test:
-	py.test tests
+clean:
+	rm -rf robobuf
 
-.PHONY: init test
+# requires apt install protobuf-compiler
+proto:
+	protoc --proto_path=robobuf=$(proto_path) --python_out=. $(proto_path)/*.proto
+
+test:
+	py.test
+
+.PHONY: init clean test

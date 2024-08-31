@@ -26,7 +26,9 @@
 			"sstream": "cpp",
 			"streambuf": "cpp",
 			"system_error": "cpp",
-			"cmath": "cpp"
+			"cmath": "cpp",
+			"*.ipp": "cpp",
+			"device_status.pb.h": "c"
 		}
 	}
 }

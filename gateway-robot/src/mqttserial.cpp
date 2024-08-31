@@ -1,14 +1,18 @@
 #include "mqttserial.h"
 
 #include <SerialTransfer.h>
+#include <pb_encode.h>
+#include <pb_decode.h>
 
 #include "leds.h"
+#include "mqtthandler.h"
+#include "robot_to_gateway_message.pb.h"
+#include "gateway_to_robot_message.pb.h"
 
 enum RobotToGatewayMessageType
 {
     INIT,
-    PUBLISH,
-    SUBSCRIBE,
+    MQTT_PUBLISH
 };
 
 enum GatewayToRobotMessageType
@@ -19,9 +23,6 @@ enum GatewayToRobotMessageType
 };
 
 SerialTransfer transfer;
-
-const MqttSubscription *mqttSerialSubscriptions;
-int mqttSerialSubscriptionsLength;
 
 bool ackReceived = false;
 
@@ -36,41 +37,40 @@ void mqttSerialTick()
     transfer.tick();
 }
 
-void mqttPublish(const char *topic, byte *payload, uint8_t length)
+void mqttPublish(byte *payload, size_t length)
 {
-    uint8_t topicLength = strlen(topic);
-    uint16_t sendSize = transfer.txObj(topicLength);
-    sendSize = transfer.txObj(*topic, sendSize, topicLength);
-    sendSize = transfer.txObj(length, sendSize);
+    uint16_t sendSize = transfer.txObj((uint16_t) length);
     sendSize = transfer.txObj(*payload, sendSize, length);
-    transfer.sendData(sendSize, PUBLISH);
+    transfer.sendData(sendSize, MQTT_PUBLISH);
     blinkLed(MQTT_STATUS_LED, 1);
 }
 
-void mqttPublish(const char *topic, JsonDocument& json) {
+void mqttPublish(robobuf_RobotToGatewayMessage& message) 
+{
     byte payload[200];
-    uint8_t payloadLength = serializeMsgPack(json, payload, sizeof(payload));
-    mqttPublish(topic, payload, payloadLength);
+    pb_ostream_t stream = pb_ostream_from_buffer(payload, sizeof(payload));
+    bool status = pb_encode(&stream, robobuf_RobotToGatewayMessage_fields, &message);
+    size_t payloadLength = stream.bytes_written;
+    if (status) 
+    {
+        mqttPublish(payload, payloadLength);
+    }
+    else 
+    {
+        blinkLed(MQTT_STATUS_LED, 2);
+    }
 }
 
-void mqttSendCommand(RobotToGatewayMessageType messageType)
+void sendCommand(RobotToGatewayMessageType messageType)
 {
     transfer.txObj('0'); // dummy data because SerialTransfer packets must contain at least 1 byte
     transfer.sendData(1, messageType);
     blinkLed(MQTT_STATUS_LED, 1);
 }
 
-void mqttInit()
+void sendInitialized()
 {
-    mqttSendCommand(INIT);
-}
-
-void mqttSubscribe(const char *topic)
-{
-    uint8_t topicLength = strlen(topic);
-    uint16_t sendSize = transfer.txObj(topicLength);
-    sendSize = transfer.txObj(*topic, sendSize, topicLength);
-    transfer.sendData(sendSize, SUBSCRIBE);
+    sendCommand(INIT);
 }
 
 void handleAck()
@@ -95,42 +95,25 @@ void handleReset()
 
 void handleMessage()
 {
-    char topic[255];
-    uint8_t topicLength;
-    byte payload[255];
-    uint8_t payloadLength;
-    uint16_t rxSize = transfer.rxObj(topicLength);
-    rxSize = transfer.rxObj(*topic, rxSize, topicLength);
-    rxSize = transfer.rxObj(payloadLength, rxSize);
+    byte payload[512];
+    uint16_t payloadLength;
+    uint16_t rxSize = transfer.rxObj(payloadLength, 0, sizeof(uint16_t));
     rxSize = transfer.rxObj(*payload, rxSize, payloadLength);
+    pb_istream_t istream = pb_istream_from_buffer(payload, payloadLength);
+    robobuf_GatewayToRobotMessage message = robobuf_GatewayToRobotMessage_init_zero;
+    pb_decode(&istream, &robobuf_GatewayToRobotMessage_msg, &message);
 
-    for (int i = 0; i < mqttSerialSubscriptionsLength; i++)
-    {
-        if (strncmp(topic, mqttSerialSubscriptions[i].topic, topicLength) == 0)
-        {
-            blinkLed(MQTT_STATUS_LED, 1);
-            mqttSerialSubscriptions[i].handler(topic, payload, payloadLength);
-            break;
-        }
-
-        blinkLed(MQTT_STATUS_LED, 2); // notify topic not found
-    }
+    bool messageHandled = handleMessage(message);
+    blinkLed(MQTT_STATUS_LED, messageHandled ? 1 : 2);
 }
 
 const functionPtr callbacks[] = {handleAck, handleReset, handleMessage};
 const uint8_t callbacksLen = 3;
 
-void initMqttSerial(const MqttSubscription _subscriptions[], uint8_t _subscriptionsLength)
+void initMqttSerial()
 {
     configST config;
     config.callbacks = callbacks;
     config.callbacksLen = callbacksLen;
     transfer.begin(Serial, config);
-    mqttSerialSubscriptions = _subscriptions;
-    mqttSerialSubscriptionsLength = _subscriptionsLength;
-    mqttInit();
-    for (int i = 0; i < mqttSerialSubscriptionsLength; i++)
-    {
-        mqttSubscribe(mqttSerialSubscriptions[i].topic);
-    }
 }

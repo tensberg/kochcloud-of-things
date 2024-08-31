@@ -100,20 +100,6 @@ void setTemperature(Location location, float temperature, float minTemperature, 
     drawTemperature(location);
 }
 
-void resetMinMaxTemperatures()
-{
-    resetMinMaxTemperature(LEFT);
-    resetMinMaxTemperature(RIGHT);
-}
-
-void resetMinMaxTemperature(Location location)
-{
-    Temperatures *selected = &temperatures[location];
-    selected->min = selected->current;
-    selected->max = selected->current;
-    drawTemperature(location);
-}
-
 void fillArea(Area area, uint16_t color)
 {
     tft.fillRect(area.x, area.y, area.width, area.height, color);

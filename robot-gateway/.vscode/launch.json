@@ -8,17 +8,19 @@
             "name": "robot-gateway staging",
             "type": "debugpy",
             "request": "launch",
-            "program": "robot-gateway.py",
+            "program": "robotgateway.py",
             "console": "integratedTerminal",
-            "envFile": "${workspaceFolder}/robot-gateway-staging.env"
+            "envFile": "${workspaceFolder}/robotgateway-staging.env",
+            "justMyCode": false
         },
         {
             "name": "robot-gateway prod",
             "type": "debugpy",
             "request": "launch",
-            "program": "robot-gateway.py",
+            "program": "robotgateway.py",
             "console": "integratedTerminal",
-            "envFile": "${workspaceFolder}/robot-gateway-prod.env"
+            "envFile": "${workspaceFolder}/robotgateway-prod.env",
+            "justMyCode": false
         }
     ]
 }

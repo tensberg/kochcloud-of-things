@@ -2,4 +2,4 @@
 
 void log(const char* message);
 
-void logHex(unsigned char b, boolean println);
+void logHex(unsigned char b, bool println);

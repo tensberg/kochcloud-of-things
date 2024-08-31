@@ -1,11 +1,8 @@
 #pragma once
 
 #include "mqttserial.h"
+#include "gateway_to_robot_message.pb.h"
 
-#define SUBSCRIPTIONS_LEN 4
-
-extern MqttSubscription subscriptions[];
-
-void publishInitialized();
+bool handleMessage(robobuf_GatewayToRobotMessage& message);
 void publishDisplayState();
 void publishLedState();
