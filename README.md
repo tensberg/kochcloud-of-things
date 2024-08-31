@@ -18,13 +18,15 @@ Please don't take it as a reference.
 ### gateway-robot
 
 The ESP8266 Gateway Robot acts as the gateway between the sensor devices and the MQTT server which is used to publish the data to OpenHAB.
-It receives ESPNow messages from the devices, formats them in a JSON format suitable for publishing over MQTT and writes them on USB/Serial.
+It receives ESPNow messages from the devices, maps them to Protobuf messages in a format shared with the robot-gateway and writes them on USB/Serial.
 
 ### robot-gateway
 
 The counterpart of the Gateway Robot running on a Raspberry PI 4.
-Reads the messages from the Gateway Robot over USB/Serial and publishes them to the MQTT server.
-Also receives MQTT messages addressed to the gateway-robot and writes them on USB/Serial.
+Reads the Protobuf messages from the Gateway Robot over USB/Serial and publishes them to the MQTT server.
+The MQTT message body is the content of the Protobuf message, converted to JSON using the standard Protobuf-to-JSON mapping.
+The robot-gateway also subscribes to MQTT messages intended for the gateway-robot.
+It converts them to Protobuf and writes them on USB/Serial.
 
 ### stromzaehler
 
@@ -40,8 +42,9 @@ Read the fill level of our cistern using a distance sensor and also ambient temp
 
 ## Status
 
-Feature complete.
-
 Publishing messages from stromzaehler and zisternensensor via Gateway Robot/Robot Gateway to MQTT is working.
 
 The robot-gateway display and LEDs can be controlled from OpenHAB via MQTT messages.
+
+The display can also show the indoor and outdoor temperature.
+It is controlled by messages from the home automation.
