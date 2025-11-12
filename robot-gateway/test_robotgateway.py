@@ -21,7 +21,7 @@ class TestRobotGateway(unittest.TestCase):
         gateway_to_robot.show_text.color = 123
         expected_message_body_bytes = gateway_to_robot.SerializeToString()
 
-        robotgateway.transfer.tx_obj.assert_any_call(len(expected_message_body_bytes), 0, val_type_override='B')
+        robotgateway.transfer.tx_obj.assert_any_call(len(expected_message_body_bytes), 0, val_type_override='H')
         robotgateway.transfer.tx_obj.assert_called_with(expected_message_body_bytes, dummy_rec_size, val_type_override='9s')
         robotgateway.transfer.send.assert_called_with(dummy_rec_size, robotgateway.GatewayToRobotMessageType.MESSAGE)
 
