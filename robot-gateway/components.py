@@ -4,7 +4,7 @@ See https://www.home-assistant.io/integrations/mqtt/#device-discovery-payload
 """
 
 class Device:
-    def __init__(self, id, name, state_topic, components):
+    def __init__(self, id, name, state_topic=None, components=None):
         self._id = id
         self.name = name
         self.state_topic = state_topic
@@ -40,14 +40,15 @@ class Device:
                 "name": "Robot Gateway"
             },
             "components": {component.unique_id(): component.discovery_json(root_topic) for component in self.components},
-            "state_topic": root_topic + self.state_topic
         }
+        if self.state_topic:
+            discovery_info["state_topic"] = root_topic + self.state_topic
         return discovery_info
 
 class Component:
     device: Device
 
-    def __init__(self, id, name, platform, device_class, value_path, state_topic=None, diagnostic=False):
+    def __init__(self, id, name, platform, device_class=None, value_path=None, state_topic=None, diagnostic=False):
         self.id = id
         self.name = name
         self.platform = platform
@@ -60,10 +61,11 @@ class Component:
         json_data = {
             "platform": self.platform,
             "name": self.name,
-            "value_template": "{{ value_json." + self.value_path + " }}",
             "unique_id": self.unique_id(),
         }
     
+        if self.value_path:
+            json_data["value_template"] = "{{ value_json." + self.value_path + " }}"
         if self.state_topic:
             json_data["state_topic"] = root_topic + self.state_topic
         if self.device_class:
@@ -73,9 +75,72 @@ class Component:
 
         return json_data
     
+
     def unique_id(self):
         return self.device.id + "_" + self.id
-    
+
+class Control(Component):
+    """Base class for controllable components like Switches. Has a command topic in addition to the state topic."""
+    def __init__(self, id, name, platform, device_class, value_path, command_topic, command_template, state_topic=None, diagnostic=False):
+        super().__init__(id, name, platform, device_class, value_path, state_topic, diagnostic)
+        self.command_topic = command_topic
+        self.command_template = command_template
+
+    def discovery_json(self, root_topic):
+        json_data = super().discovery_json(root_topic)
+        if self.command_topic:
+            json_data["command_topic"] = root_topic + self.command_topic
+        if self.command_template:
+            json_data["command_template"] = self.command_template
+        return json_data
+
+class Switch(Control):
+    def __init__(self, id, name, value_property, command_topic, device_class=None, diagnostic=False):
+        super().__init__(
+            id, name, "switch", device_class, value_property, command_topic,
+            '{{ {"' + value_property + '": (value == "ON") } | tojson }}',
+            command_topic + "/status", diagnostic
+        )
+
+    def discovery_json(self, root_topic):
+        json_data = super().discovery_json(root_topic)
+        if self.value_path:
+            json_data["value_template"] = '{{ "ON" if value_json.' + self.value_path + ' else "OFF" }}'
+        return json_data
+
+class NumberControl(Control):
+    def __init__(self, id, name, value_property, value_min, value_max, command_topic, state_topic, step=1, mode=None, unit_of_measurement=None, device_class=None, diagnostic=False):
+        super().__init__(id, name, "number", device_class, value_property, command_topic, 
+                         '{{ {"' + value_property + '": value } | tojson }}',
+                         state_topic, diagnostic)
+        self.value_min = value_min
+        self.value_max = value_max
+        self.step = step
+        self.mode = mode
+        self.unit_of_measurement = unit_of_measurement
+
+    def discovery_json(self, root_topic):
+        json_data = super().discovery_json(root_topic)
+        json_data.update({
+            "min": self.value_min,
+            "max": self.value_max,
+            "step": self.step
+        })
+        if self.mode:
+            json_data["mode"] = self.mode
+        if self.unit_of_measurement:
+            json_data["unit_of_measurement"] = self.unit_of_measurement
+        return json_data
+
+class TextControl(Control):
+    """MQTT Text control for Home Assistant, supporting arbitrary string values."""
+    def __init__(self, id, name, value_property, command_topic, state_topic, diagnostic=False):
+        super().__init__(
+            id, name, "text", None, value_property, command_topic,
+            '{{ {"' + value_property + '": value } | tojson }}',
+            state_topic, diagnostic
+        )
+
 class Sensor(Component):
     def __init__(self, id, name, device_class, unit_of_measurement, value_path, suggested_display_precision, state_class="measurement", state_topic=None, diagnostic=False):
         super().__init__(id, name, "sensor", device_class, value_path, state_topic, diagnostic=diagnostic)
@@ -105,6 +170,23 @@ class BinarySensor(Component):
     def discovery_json(self, root_topic):
         json_data = super().discovery_json(root_topic)
         json_data["value_template"] = "{{ \"ON\" if value_json." + self.value_path + " else \"OFF\" }}"
+        return json_data
+
+class Trigger(Component):
+    def __init__(self, id, name, topic, type, subtype, diagnostic=False):
+        super().__init__(id, name, "device_automation", diagnostic=diagnostic)
+        self.topic = topic
+        self.type = type
+        self.subtype = subtype
+
+    def discovery_json(self, root_topic):
+        json_data = super().discovery_json(root_topic)
+        json_data.update({
+            "automation_type": "trigger",
+            "topic": root_topic + self.topic,
+            "type": self.type,
+            "subtype": self.subtype
+        })
         return json_data
     
 # static factory functions

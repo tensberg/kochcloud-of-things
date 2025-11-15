@@ -128,3 +128,96 @@ class TestBinarySensorDiscoveryJson(DiscoveryJsonTestBase):
             "device_class": "door"
         }
         self.check_discovery_json(binary_sensor, ROOT_TOPIC, expected)
+
+class TestSwitchDiscoveryJson(DiscoveryJsonTestBase):
+    def test_switch(self):
+        switch = self.create_component(
+            components.Switch,
+            id="led1",
+            name="LED 1",
+            value_property="user1",
+            command_topic="test/devices/leds"
+        )
+        expected = {
+            "platform": "switch",
+            "name": "LED 1",
+            "value_template": "{{ \"ON\" if value_json.user1 else \"OFF\" }}",
+            "unique_id": "kochcloud-of-things-dev1_led1",
+            "command_topic": "root/test/devices/leds",
+            "command_template": "{{ {\"user1\": (value == \"ON\") } | tojson }}",
+            "state_topic": "root/test/devices/leds/status"
+        }
+        self.check_discovery_json(switch, ROOT_TOPIC, expected)
+
+class TestTextControlDiscoveryJson(DiscoveryJsonTestBase):
+    def test_text_control(self):
+        text_control = self.create_component(
+            components.TextControl,
+            id="text1",
+            name="Text 1",
+            value_property="text_value",
+            command_topic="test/devices/text",
+            state_topic="test/devices/text/state"
+        )
+        expected = {
+            "platform": "text",
+            "name": "Text 1",
+            "unique_id": "kochcloud-of-things-dev1_text1",
+            "command_topic": "root/test/devices/text",
+            "command_template": "{{ {\"text_value\": value } | tojson }}",
+            "state_topic": "root/test/devices/text/state",
+            "value_template": "{{ value_json.text_value }}"
+        }
+        self.check_discovery_json(text_control, ROOT_TOPIC, expected)
+
+class TestNumberControlDiscoveryJson(DiscoveryJsonTestBase):
+    def test_number_control(self):
+        number_control = self.create_component(
+            components.NumberControl,
+            id="num1",
+            name="Number 1",
+            value_property="num_value",
+            value_min=0,
+            value_max=100,
+            command_topic="test/devices/number",
+            state_topic="test/devices/number/state",
+            step=5,
+            mode="slider",
+            unit_of_measurement="units"
+        )
+        expected = {
+            "platform": "number",
+            "name": "Number 1",
+            "unique_id": "kochcloud-of-things-dev1_num1",
+            "command_topic": "root/test/devices/number",
+            "command_template": "{{ {\"num_value\": value } | tojson }}",
+            "state_topic": "root/test/devices/number/state",
+            "value_template": "{{ value_json.num_value }}",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "mode": "slider",
+            "unit_of_measurement": "units"
+        }
+        self.check_discovery_json(number_control, ROOT_TOPIC, expected)
+
+class TestTriggerDiscoveryJson(DiscoveryJsonTestBase):
+    def test_trigger(self):
+        trigger = self.create_component(
+            components.Trigger,
+            id="trig1",
+            name="Trigger 1",
+            topic="test/devices/trigger",
+            type="button_short_press",
+            subtype="button1"
+        )
+        expected = {
+            "platform": "device_automation",
+            "name": "Trigger 1",
+            "unique_id": "kochcloud-of-things-dev1_trig1",
+            "automation_type": "trigger",
+            "topic": "root/test/devices/trigger",
+            "type": "button_short_press",
+            "subtype": "button1"
+        }
+        self.check_discovery_json(trigger, ROOT_TOPIC, expected)

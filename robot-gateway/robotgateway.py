@@ -9,7 +9,7 @@ import os
 from google.protobuf import json_format
 from caseconverter import kebabcase, snakecase
 from robobuf import gateway_to_robot_message_pb2, robot_to_gateway_message_pb2
-from components import *
+from kochcloud_of_things_devices import KOCHCLOUD_OF_THINGS_DEVICES
 
 SERIAL_PORT = os.environ.get('GATEWAY_ROBOT_SERIAL_PORT', '/dev/ttyUSB0')
 
@@ -26,86 +26,13 @@ MQTT_HOMEASSISTANT_STATUS_ONLINE = os.environ.get('MQTT_HOMEASSISTANT_STATUS_ONL
 transfer = None
 mqttc = None
 
-devices = [
-    # Device(
-    #     id="gateway-robot",
-    #     name="Gateway Robot",
-    #     state_topic="gateway-robot/state",
-    #     components=[
-    #         Sensor(
-    #             id="display_state_brightness",
-    #             name="Display Brightness",
-    #             device_class="illuminance",
-    #             unit_of_measurement="lx",
-    #             state_topic="display-state/state",
-    #             value_path="brightness"
-    #         ),
-    #         BinarySensor(
-    #             id="led_state_global",
-    #             name="LED Global",
-    #             device_class="light",
-    #             state_topic="led-state/state",
-    #             value_path="global"
-    #         )
-    #     ]
-    # ),
-    Device(
-        id="stromzaehler",
-        name="Stromzähler",
-        state_topic="stromzaehler/state",
-        components=[
-            create_status_sensors(),
-            create_power_sensors("haushalt", "Haushalt"),
-            create_power_sensors("waerme", "Wärmepumpe"),
-            BinarySensor(
-                id="config_continuous_mode",
-                name="Config - Continuous Mode",
-                device_class=None,
-                value_path="config.continuousMode"
-            )
-        ]
-    ),
-    Device(
-        id="zisternensensor",
-        name="Zisternensensor",
-        state_topic="zisternensensor/state",
-        components=[
-            create_status_sensors(),
-            Sensor(
-                id="temperature",
-                name="Temperatur",
-                device_class="temperature",
-                unit_of_measurement="°C",
-                value_path="data.temperature",
-                suggested_display_precision=1,
-            ),
-            Sensor(
-                id="humidity",
-                name="Luftfeuchtigkeit",
-                device_class="humidity",
-                unit_of_measurement="%",
-                value_path="data.humidity",
-                suggested_display_precision=0,
-            ),
-            Sensor(
-                id="pressure",
-                name="Luftdruck (absolut)",
-                device_class="pressure",
-                unit_of_measurement="hPa",
-                value_path="data.pressure",
-                suggested_display_precision=0,
-            )
-        ]
-    )
-]
-
 # Home Assistant MQTT Discovery publishing
 # 
 def publish_homeassistant_discovery():
     """
     Publish Home Assistant MQTT Discovery messages for all devices and their components.
     """
-    for device in devices:
+    for device in KOCHCLOUD_OF_THINGS_DEVICES:
         topic = f"{MQTT_DISCOVERY_PREFIX}/device/{device.id}/config"
         payload = device.discovery_json(MQTT_ROOT_TOPIC)
         mqttc.publish(topic, json.dumps(payload))
