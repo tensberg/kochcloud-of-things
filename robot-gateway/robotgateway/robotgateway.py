@@ -9,7 +9,7 @@ import os
 from google.protobuf import json_format
 from caseconverter import kebabcase, snakecase
 from robobuf import gateway_to_robot_message_pb2, robot_to_gateway_message_pb2
-from kochcloud_of_things_devices import KOCHCLOUD_OF_THINGS_DEVICES
+from .kochcloud_of_things_devices import KOCHCLOUD_OF_THINGS_DEVICES
 
 SERIAL_PORT = os.environ.get('GATEWAY_ROBOT_SERIAL_PORT', '/dev/ttyUSB0')
 
@@ -184,7 +184,7 @@ def init_mqtt():
     mqttc.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqttc.connect(MQTT_SERVER)
 
-if __name__ == '__main__':
+def main():
     try:
         init_serial_transfer()
         init_mqtt()

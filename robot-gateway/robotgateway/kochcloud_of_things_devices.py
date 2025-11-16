@@ -1,4 +1,4 @@
-from components import *
+from .components import *
 
 KOCHCLOUD_OF_THINGS_DEVICES = [
     Device(

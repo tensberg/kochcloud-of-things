@@ -4,7 +4,7 @@ init:
 	pip install -r requirements.txt
 
 clean:
-	rm -rf robobuf
+	rm -r robobuf/*_pb2.py
 
 # requires apt install protobuf-compiler
 proto:

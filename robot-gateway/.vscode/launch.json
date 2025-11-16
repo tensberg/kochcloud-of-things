@@ -8,7 +8,7 @@
             "name": "robot-gateway staging",
             "type": "debugpy",
             "request": "launch",
-            "program": "robotgateway.py",
+            "module": "robotgateway",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/robotgateway-staging.env",
             "justMyCode": false
@@ -17,7 +17,7 @@
             "name": "robot-gateway prod",
             "type": "debugpy",
             "request": "launch",
-            "program": "robotgateway.py",
+            "module": "robotgateway",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/robotgateway-prod.env",
             "justMyCode": false

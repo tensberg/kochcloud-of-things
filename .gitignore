@@ -4,3 +4,4 @@ secrets.py
 __pycache__
 robot-gateway/robotgateway-staging.env
 robot-gateway/robotgateway-prod.env
+robot-gateway/dev/gateway-robot

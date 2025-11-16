@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 from robobuf import gateway_to_robot_message_pb2, robot_to_gateway_message_pb2
-import robotgateway
+from robotgateway import  robotgateway
 
 class TestRobotGateway(unittest.TestCase):
     def test_send_message_to_robot(self):

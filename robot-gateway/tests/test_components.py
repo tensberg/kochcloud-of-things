@@ -1,5 +1,5 @@
 import unittest
-import components
+import robotgateway.components as components
 
 ROOT_TOPIC = "root/"
 
