@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 EnvironmentFile=/etc/default/robot-gateway
-ExecStart=/usr/bin/env /usr/bin/python3 -m robotgateway
+ExecStart=/usr/bin/env /usr/bin/python3 -u -m robotgateway
 WorkingDirectory=/opt/robotgateway/kochcloud-of-things/robot-gateway
 StandardOutput=inherit
 StandardError=inherit
