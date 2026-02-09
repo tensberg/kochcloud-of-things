@@ -16,18 +16,18 @@ typedef struct Temperatures {
     float max;
     float current;
     float previous;
-    float delta;
+    Trend trend;
 } Temperatures;
 
 Temperatures temperatures[2] = {
-    {TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED},
-    {TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED}
+    {TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TREND_STABLE},
+    {TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TEMPERATURE_UNDEFINED, TREND_STABLE}
 };
 
-const char emptyTendency[] = "";
-const char tendencyRising[] = "\x18";
-const char tendencyFalling[] = "\x19";
-const char tendencyStable[] = "";
+const char emptyTrend[] = "";
+const char trendRising[] = "\x18";
+const char trendFalling[] = "\x19";
+const char trendStable[] = "";
 
 typedef struct Area {
     int16_t x;
@@ -82,7 +82,7 @@ long mapftol(float x, long in_min, long in_max, long out_min, long out_max) {
     return (delta * dividend + (divisor / 2)) / divisor + out_min;
 }
 
-void setTemperature(Location location, float temperature, float minTemperature, float maxTemperature, float delta)
+void setTemperature(Location location, float temperature, float minTemperature, float maxTemperature, Trend trend)
 {
     Temperatures *selected = &temperatures[location];
     selected->current = temperature;
@@ -96,7 +96,7 @@ void setTemperature(Location location, float temperature, float minTemperature, 
     } else if (temperature > selected->max || selected->max == TEMPERATURE_UNDEFINED) {
         selected->max = temperature;
     }
-    selected->delta = delta;
+    selected->trend = trend;
     drawTemperature(location);
 }
 
@@ -105,12 +105,12 @@ void fillArea(Area area, uint16_t color)
     tft.fillRect(area.x, area.y, area.width, area.height, color);
 }
 
-void drawTemperatureText(Location location, float temperature, const char* tendency, uint16_t color)
+void drawTemperatureText(Location location, float temperature, const char* trend, uint16_t color)
 {
-    const char* tendencyLeft = location == LEFT ? tendency : emptyTendency;
-    const char* tendencyRight = location == RIGHT ? tendency : emptyTendency;
+    const char* trendLeft = location == LEFT ? trend : emptyTrend;
+    const char* trendRight = location == RIGHT ? trend : emptyTrend;
     char text[10];
-    sprintf(text, "%s%.1f""\xf8""C%s", tendencyRight, temperature, tendencyLeft); // the tendency of the right thermometer is displayed on the left side of the text
+    sprintf(text, "%s%.1f""\xf8""C%s", trendRight, temperature, trendLeft); // the trend of the right thermometer is displayed on the left side of the text
     int16_t x, y;
     uint16_t textWidth, textHeight;
     tft.getTextBounds(text, 0, 0, &x, &y, &textWidth, &textHeight);
@@ -170,15 +170,16 @@ void drawTemperature(Location location)
         color = temperature < 26 || temperatures[LEFT].current >= temperature ? ST7735_BLACK : ST7735_RED;
     }
 
-    const char* tendency;
-    if (selected -> delta < -0.5) {
-        tendency = tendencyFalling;
-    } else if (selected -> delta > 0.5) {
-        tendency = tendencyRising;
+    const char* trendChar;
+    
+    if (selected -> trend == TREND_FALLING) {
+        trendChar = trendFalling;
+    } else if (selected -> trend == TREND_RISING) {
+        trendChar = trendRising;
     } else {
-        tendency = tendencyStable;
+        trendChar = trendStable;
     }
 
-    drawTemperatureText(location, temperature, tendency, color);
+    drawTemperatureText(location, temperature, trendChar, color);
     drawTemperatureHands(location, selected, color);
 }

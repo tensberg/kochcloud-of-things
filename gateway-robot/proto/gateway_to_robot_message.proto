@@ -34,9 +34,16 @@ message Leds {
 }
 
 enum ThermometerLocation {
-    UNSPECIFIED = 0;
+    THERMOMETER_LOCATION_UNSPECIFIED = 0;
     LEFT = 1;
     RIGHT = 2;
+}
+
+enum ThermometerTrend {
+    THERMOMETER_TREND_UNSPECIFIED = 0;
+    STABLE = 1;
+    RISING = 2;
+    FALLING = 3;
 }
 
 message Thermometer {
@@ -44,5 +51,7 @@ message Thermometer {
     float temperature = 2;
     optional float min_temperature = 3;
     optional float max_temperature = 4;
-    float temperature_delta = 5;
+    reserved 5;
+    reserved "temperature_delta";
+    optional ThermometerTrend trend = 6;
 }

@@ -75,6 +75,19 @@ void handleThermometer(robobuf_Thermometer& thermometer)
         default:
             return;
     }
+    Trend trend;
+    switch (thermometer.trend) {
+        case robobuf_ThermometerTrend_RISING:
+            trend = TREND_RISING;
+            break;
+        case robobuf_ThermometerTrend_FALLING:
+            trend = TREND_FALLING;
+            break;
+        case robobuf_ThermometerTrend_STABLE:
+        default:
+            trend = TREND_STABLE;
+            break;
+    }
 
     float minTemperature = TEMPERATURE_UNDEFINED;
     if (thermometer.has_min_temperature)
@@ -87,7 +100,7 @@ void handleThermometer(robobuf_Thermometer& thermometer)
         maxTemperature = thermometer.max_temperature;
     }
 
-    setTemperature(location, thermometer.temperature, minTemperature, maxTemperature, thermometer.temperature_delta);
+    setTemperature(location, thermometer.temperature, minTemperature, maxTemperature, trend);
 }
 
 bool handleMessage(robobuf_GatewayToRobotMessage& message)

@@ -8,5 +8,5 @@
 
 void initThermometer();
 void drawThermometer();
-void setTemperature(Location location, float temperature, float minTemperature = TEMPERATURE_UNDEFINED, float maxTemperature = TEMPERATURE_UNDEFINED, float delta = 0);
+void setTemperature(Location location, float temperature, float minTemperature = TEMPERATURE_UNDEFINED, float maxTemperature = TEMPERATURE_UNDEFINED, Trend trend = TREND_STABLE);
 void drawTemperature(Location location);

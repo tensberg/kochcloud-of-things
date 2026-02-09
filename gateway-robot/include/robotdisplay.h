@@ -8,6 +8,12 @@ enum Location {
     RIGHT
 };
 
+enum Trend {
+    TREND_STABLE,
+    TREND_RISING,
+    TREND_FALLING
+};
+
 typedef struct DisplayState {
     uint16_t background_color;
     char image[51];
