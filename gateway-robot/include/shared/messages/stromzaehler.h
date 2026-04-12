@@ -6,6 +6,7 @@ typedef struct __attribute__((__packed__)) {
     bool readSuccess;
     double powerSumWh;
     double powerCurrentW;
+    double feedInSumWh;
 } StromzaehlerData;
 
 typedef struct __attribute__((__packed__)) {

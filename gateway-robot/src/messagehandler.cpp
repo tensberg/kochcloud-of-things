@@ -65,6 +65,7 @@ void setStromzaehlerData(robobuf_StromzaehlerData& mqttData, bool& hasData, Stro
         mqttData.has_power = true;
         robobuf_PowerData& power = mqttData.power;
         power.sumWh = data.powerSumWh;
+        power.feedInSumWh = data.feedInSumWh;
         power.currentW = data.powerCurrentW;
     }
 }

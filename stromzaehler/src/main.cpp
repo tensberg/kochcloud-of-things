@@ -40,11 +40,13 @@ void updateReadingResult(StromzaehlerData &data, const MeterReading &reading, bo
   if (readSuccess)
   {
     data.powerSumWh = reading.powerSumWh;
+    data.feedInSumWh = reading.feedInSumWh;
     data.powerCurrentW = reading.powerCurrentW;
   }
   else
   {
     data.powerSumWh = 0;
+    data.feedInSumWh = 0;
     data.powerCurrentW = 0;
   }
 }

@@ -159,6 +159,10 @@ class PowerSum(Sensor):
     def __init__(self, meter, meter_name):
         super().__init__(meter + "_power_sumwh", meter_name + " Verbrauch", "energy", "Wh", meter + ".power.sumWh", 1, state_class="total")
 
+class FeedInPowerSum(Sensor):
+    def __init__(self, meter, meter_name):
+        super().__init__(meter + "_feedin_power_sumwh", meter_name + " Einspeisung", "energy", "Wh", meter + ".power.feedInSumWh", 1, state_class="total")
+
 class PowerCurrent(Sensor):
     def __init__(self, meter, meter_name):
         super().__init__(meter + "_power_currentw", meter_name + " Leistung", "power", "W", meter + ".power.currentW", 0)
@@ -194,6 +198,7 @@ class Trigger(Component):
 def create_power_sensors(meter, meter_name):
     return [
         PowerSum(meter, meter_name),
+        FeedInPowerSum(meter, meter_name),
         PowerCurrent(meter, meter_name)
     ]
 

@@ -6,6 +6,7 @@ import "device_status.proto";
 
 message PowerData {
     double sumWh = 1;
+    double feedInSumWh = 3;
     double currentW = 2;
 }
 

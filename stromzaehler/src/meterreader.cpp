@@ -5,7 +5,8 @@
 #include "meterreader.h"
 
 #define OBIS_POWER_SUM_WH 0
-#define OBIS_POWER_CURRENT_W 1
+#define OBIS_FEEDIN_POWER_SUM_WH 1
+#define OBIS_POWER_CURRENT_W 2
 
 #define SETUP_BYTES 150
 
@@ -16,7 +17,8 @@ typedef struct
 
 const Obis OBIS[] = {
     {0x01, 0x00, 0x01, 0x08, 0x00, 0xff}, // powerSumWh
-    {0x01, 0x00, 0x10, 0x07, 0x00, 0xff}  // powerCurrentW
+    {0x01, 0x00, 0x02, 0x08, 0x00, 0xff}, // feedInPowerSumWh
+    {0x01, 0x00, 0x10, 0x07, 0x00, 0xff}, // powerCurrentW
 };
 
 MeterReader::MeterReader(int rxPin, int vccPin)
@@ -68,6 +70,7 @@ boolean MeterReader::read(int timeoutMs, MeterReading &reading)
 
   reading.powerCurrentW = 0;
   reading.powerSumWh = 0;
+  reading.feedInSumWh = 0;
 
   digitalWrite(vccPin, HIGH);
   this->input.listen();
@@ -127,6 +130,10 @@ void MeterReader::processListend(MeterReading &reading)
   if (smlOBISCheck(OBIS[OBIS_POWER_SUM_WH].message))
   {
     smlOBISWh(reading.powerSumWh);
+  }
+  if (smlOBISCheck(OBIS[OBIS_FEEDIN_POWER_SUM_WH].message))
+  {
+    smlOBISWh(reading.feedInSumWh);
   }
   else if (smlOBISCheck(OBIS[OBIS_POWER_CURRENT_W].message))
   {

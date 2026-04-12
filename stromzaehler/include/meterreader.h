@@ -5,6 +5,7 @@
 typedef struct
 {
     double powerSumWh;
+    double feedInSumWh;
     double powerCurrentW;
 } MeterReading;
 
