@@ -12,7 +12,7 @@ render_exploded = true;
 // vorgegebene Parameter
 //
 
-case_wall_thickness = 1.4;
+case_wall_thickness = 1.8;
 case_wall_inset = 0.4;
 
 circuit_board_length = 60;
@@ -25,17 +25,19 @@ circuit_height_below_board = 2; // TODO: messen
 
 corner_offset = 0; // Rundung der Gehäuseecken
 
+upper_case_connector_inset = 0.3;
+
 // die 4 Löcher an den Seiten der Platine für die Befestigung
 circuit_board_hole_diameter = 2.5;
-circuit_board_hole_offset = 1;
+circuit_board_hole_offset = 0.8;
 circuit_board_holder_height = 3;
 
 // Bauelemente
 
 // Druckknopf
-button_diameter = 12; // TODO: kontrollieren
-button_offset_front = 5; // TODO: kontrollieren
-button_offset_left = 3; // TODO: kontrollieren
+button_diameter = 13.6;
+button_offset_front = 1;
+button_offset_right = 7;
 
 // ESP
 // soviel steht der ESP über die Platine hinaus
@@ -43,16 +45,16 @@ board_overhang = 2;
 
 // Sensor-Anschlüsse
 // Abstand vom Platinenrand
-connector_offset_left = 3; // TODO: kontrollieren
-connector_offset_right = 8; // TODO: kontrollieren
-connector_offset_front = 22; // TODO: kontrollieren
-connector_width = 7; // TODO: kontrollieren
+connector_offset_left = 7;
+connector_offset_right = 2;
+connector_offset_front = 21;
+connector_width = 6;
 
 // LEDs
-led_diameter = 4; // TODO: kontrollieren
-led_offset_front = 18; // TODO: messen
-led_offset_left_1 = 12; // TODO: messen
-led_offset_left_2 = 32; // TODO: messen
+led_diameter = 5;
+led_offset_front = 15.5;
+led_offset_right_1 = 16;
+led_offset_right_2 = 32;
 
 // Gehäuseöffner (Platz für Schraubenzieher zum aufhebeln)
 case_opener_width = 4;
@@ -60,14 +62,14 @@ case_opener_height = 1.4;
 
 // USB-Anschluss
 // offsets relativ zur Platine
-usb_connector_offset_left = 16; // TODO: messen
-usb_connector_offset_bottom = 12; // TODO: messen
-usb_connector_width = 10; // TODO: messen
-usb_connector_height = 3; // TODO: messen
+usb_connector_offset_right = 18;
+usb_connector_offset_bottom = 12;
+usb_connector_width = 8;
+usb_connector_height = 3;
 
 // Stromversorgung Anschluss
 // offsets relativ zur Platine
-battery_connector_offset_back = 6; // TODO: messen
+battery_connector_offset_back = 4; // TODO: messen
 battery_connector_offset_bottom = 1; // TODO: messen
 battery_connector_width = 6; // TODO: messen
 battery_connector_height = 2; // TODO: messen
@@ -84,7 +86,7 @@ circuit_board_length_top_2_inset = circuit_board_length_top_2 + case_wall_inset;
 
 circuit_board_holder_diameter = circuit_board_hole_diameter - 0.2;
 circuit_board_holder_offset = circuit_board_hole_offset + 0.1;
-circuit_board_holder_hole_diameter = circuit_board_holder_diameter + 0.1;
+circuit_board_holder_hole_diameter = circuit_board_holder_diameter + 0.2; // fixate the board but do not connect too hard
 circuit_board_holder_hole_offset = circuit_board_hole_offset + 0.05;
 
 circuit_board_holder_total_offset = circuit_board_holder_offset + circuit_board_holder_diameter/2;
@@ -109,8 +111,7 @@ led_radius = led_diameter / 2;
 // Rendering-Parameter
 rotate_top = [render_exploded ? 180 : 0, 0, 0];
 translate_top_1 = render_exploded ? [0, case_width*2 + 10, case_height_upper_1] : [0, 0, case_height_lower];
-translate_top_2 = render_exploded ? [case_length_top_1, case_width*3 + 20, case_height_upper_2] : [case_length_top_1, 0, case_height_lower];
-
+translate_top_2 = render_exploded ? [case_length_top_1 + 3, case_width*2 + 10, case_height_upper_2] : [case_length_top_1, 0, case_height_lower];
 
 // Gehäuse Unterteil
 if (render_bottom) {
@@ -128,7 +129,8 @@ if (render_bottom) {
         }
 
         // upper layer cutout
-        translate([case_wall_thickness, case_wall_thickness, case_wall_thickness + case_wall_inset + circuit_height_below_board]) {
+        translate([case_wall_thickness, case_wall_thickness, 
+                    case_wall_thickness + case_wall_inset + circuit_height_below_board]) {
             linear_extrude(circuit_board_height + 1) {
                 polygon([
                     // bottom left
@@ -176,21 +178,31 @@ if (render_top_1) {
                 lower_layer_cutout_2d();
             
             // parts cutouts
-            translate([case_wall_thickness + case_wall_inset, case_wall_thickness + case_wall_inset, circuit_height_above_board_1 - 1]) {
+            translate([case_wall_thickness + case_wall_inset, case_wall_thickness + case_wall_inset, 
+                        circuit_height_above_board_1 - 1]) {
                 linear_extrude(case_wall_thickness + 2) {
                     // button
-                    translate([button_offset_front + button_radius, button_offset_left + button_radius])
+                    translate([button_offset_front + button_radius, button_offset_right + button_radius])
                         circle(button_radius);
                     
                     // LEDs
-                    translate([led_offset_front + led_radius, led_offset_left_1 + led_radius])
+                    translate([led_offset_front + led_radius, led_offset_right_1 + led_radius])
                         circle(led_radius);
-                    translate([led_offset_front + led_radius, led_offset_left_2 + led_radius])
+                    translate([led_offset_front + led_radius, led_offset_right_2 + led_radius])
                         circle(led_radius);
                     
                     // connectors
                     translate([case_length_top_1 - connector_width, connector_offset_left])
                         square([connector_width + 1, circuit_board_width - connector_offset_left - connector_offset_right]);
+                    
+                }
+                
+                // connector labels
+                translate([0, 0, case_wall_thickness / 2 + 1]) linear_extrude(case_wall_thickness / 2 + 1) {
+                    translate([led_offset_front + led_radius, led_offset_right_1 - 1]) rotate(-90)
+                      text("HH", size=4, valign="center");
+                    translate([led_offset_front + led_radius, led_offset_right_2 - 1]) rotate(-90)
+                      text("HZ", size=4, valign="center");
                 }
             }
             
@@ -207,6 +219,9 @@ if (render_top_1) {
                     cylinder(h = circuit_board_holder_height, d = circuit_board_holder_hole_diameter);
             }
         }
+        
+        translate([case_length_top_1, 0])
+            upper_case_connectors();
     }
 }
 
@@ -225,11 +240,12 @@ if (render_top_2) {
             linear_extrude(circuit_height_above_board_2 + 1)
                 lower_layer_cutout_2d();
 
+            upper_case_connectors(true);
             
             // back wall cutouts
             translate([case_length_top_2 - case_wall_thickness - 1, 0, -1]) {
                 // usb connector cutout
-                translate([0, usb_connector_offset_left, usb_connector_offset_bottom])
+                translate([0, usb_connector_offset_right, usb_connector_offset_bottom])
                     cube([case_wall_thickness + 2, usb_connector_width, usb_connector_height + 1]);
 
                 // case opener cutout
@@ -247,9 +263,9 @@ if (render_top_2) {
                   rotate([90, 0, 0])
                   linear_extrude(case_wall_thickness) {
                     translate([-4, 0])
-                      text("+", size=4);
-                    translate([battery_connector_width + 1, 0])
                       text("-", size=4);
+                    translate([battery_connector_width + 1, 0])
+                      text("+", size=4);
                   }
               }
             }
@@ -268,7 +284,8 @@ if (render_top_2) {
         opening_wall_height = case_height_upper_2 - case_height_upper_1 + case_wall_thickness;
         translate([0, case_wall_thickness, case_height_upper_1 - case_wall_thickness])
             cube([case_wall_thickness, case_wall_inset + connector_offset_left, opening_wall_height]);
-        translate([0, case_width - case_wall_thickness- case_wall_inset - connector_offset_right, case_height_upper_1 - case_wall_thickness])
+        translate([0, case_width - case_wall_thickness- case_wall_inset - connector_offset_right, 
+                   case_height_upper_1 - case_wall_thickness])
             cube([case_wall_thickness, connector_offset_right + case_wall_inset, opening_wall_height]);
     }
         
@@ -302,4 +319,20 @@ module lower_layer_cutout_2d() {
         [circuit_board_length_inset - hole_stand_size, hole_stand_size], 
         [circuit_board_length_inset - hole_stand_size, 0]
     ]);
+}
+
+module upper_case_connectors(negative = false) {
+    upper_case_connector(negative);
+    translate([0, case_width - case_wall_thickness])
+        upper_case_connector(negative);
+}
+
+module upper_case_connector(negative) {
+    ci = upper_case_connector_inset;
+    cd = case_wall_thickness / 2;
+    no = negative ? 1 : 0; // negative_offset
+    translate([-no, 0, -no]) linear_extrude(case_height_upper_1 + no)
+        polygon([
+            [0, ci*2], [cd + no, ci*2], [cd + no, ci], [cd*2 + no, ci],
+            [cd*2 + no, case_wall_thickness - ci], [cd + no, case_wall_thickness - ci], [cd + no, case_wall_thickness - ci*2], [0, case_wall_thickness - ci*2]]);
 }
