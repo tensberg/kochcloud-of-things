@@ -19,22 +19,22 @@ circuit_board_length = 60;
 circuit_board_length_top_1 = 29;
 circuit_board_width = 40;
 circuit_board_height = 1.6;
-circuit_height_above_board_1 = 7.8;
+circuit_height_above_board_1 = 7.2 - case_wall_thickness;
 circuit_height_above_board_2 = 16;
 circuit_height_below_board = 4;
 
 corner_offset = 0; // Rundung der Gehäuseecken
 
 // die 4 Löcher an den Seiten der Platine für die Befestigung
-circuit_board_hole_diameter = 2;
-circuit_board_hole_offset = 2.4;
+circuit_board_hole_diameter = 2.1;
+circuit_board_hole_offset = 1.8;
 circuit_board_holder_height = 3.5;
 
 // Bauelemente
 
 // Druckknopf
-button_diameter = 12.8;
-button_offset_front = 2.5;
+button_diameter = 13;
+button_offset_front = 1.6;
 button_offset_right = 9;
 
 // ESP
@@ -59,14 +59,14 @@ case_opener_height = 1.4;
 
 // USB-Anschluss
 // offsets relativ zur Platine
-usb_connector_offset_right = 18;
+usb_connector_offset_right = 19;
 usb_connector_offset_bottom = 13;
 usb_connector_width = 8;
 usb_connector_height = 3;
 
 // Stromversorgung Anschluss
 // offsets relativ zur Platine
-battery_connector_offset_back = 4.6;
+battery_connector_offset_back = 5;
 battery_connector_offset_bottom = 2;
 battery_connector_width = 5.4;
 battery_connector_height = 2.7;
@@ -327,8 +327,8 @@ module upper_case_connectors(negative = false) {
 }
 
 module upper_case_connector(negative) {
-    cd = case_wall_thickness*0.95;
     no = negative ? 1 : 0; // negative_offset
+    cd = case_wall_thickness*(negative ? 0.95 : 1);
     translate([-no, -no/2, -no]) linear_extrude(case_height_upper_1 + no)
         square([cd+no, cd+no]);
 }
