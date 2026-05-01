@@ -120,7 +120,7 @@ void loop()
   updateReadingResult(message.dataWaerme, reading, success);
   signalSuccess(LED_STATUS_WAERME, success);
 
-  bool messageSent = sendDataEspNow((uint8_t *)&message, sizeof(message));
+  bool messageSent = sendDataEspNow((uint8_t *)&message, sizeof(message)) == ESPNOW_OK;
 
   updateAndSaveStatus(message.status, messageSent, continuousMode ? 0 : SLEEP_BETWEEN_MEASUREMENTS_MICROS);
 
