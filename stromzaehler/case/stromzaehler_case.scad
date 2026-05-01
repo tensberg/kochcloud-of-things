@@ -13,46 +13,43 @@ render_exploded = true;
 //
 
 case_wall_thickness = 1.8;
-case_wall_inset = 0.4;
+case_wall_inset = 0.2;
 
 circuit_board_length = 60;
 circuit_board_length_top_1 = 29;
 circuit_board_width = 40;
-circuit_board_height = 1.53;
-circuit_height_above_board_1 = 10;
-circuit_height_above_board_2 = 17;
-circuit_height_below_board = 2; // TODO: messen
+circuit_board_height = 1.6;
+circuit_height_above_board_1 = 7.8;
+circuit_height_above_board_2 = 16;
+circuit_height_below_board = 4;
 
 corner_offset = 0; // Rundung der Gehäuseecken
 
-upper_case_connector_inset = 0.3;
-
 // die 4 Löcher an den Seiten der Platine für die Befestigung
-circuit_board_hole_diameter = 2.5;
-circuit_board_hole_offset = 0.8;
-circuit_board_holder_height = 3;
+circuit_board_hole_diameter = 2;
+circuit_board_hole_offset = 2.4;
+circuit_board_holder_height = 3.5;
 
 // Bauelemente
 
 // Druckknopf
-button_diameter = 13.6;
-button_offset_front = 1;
-button_offset_right = 7;
+button_diameter = 12.8;
+button_offset_front = 2.5;
+button_offset_right = 9;
 
 // ESP
 // soviel steht der ESP über die Platine hinaus
-board_overhang = 2;
+board_overhang = 4;
 
 // Sensor-Anschlüsse
 // Abstand vom Platinenrand
 connector_offset_left = 7;
 connector_offset_right = 2;
-connector_offset_front = 21;
-connector_width = 6;
+connector_width = 8;
 
 // LEDs
-led_diameter = 5;
-led_offset_front = 15.5;
+led_diameter = 5.5;
+led_offset_front = 15.3;
 led_offset_right_1 = 16;
 led_offset_right_2 = 32;
 
@@ -63,16 +60,16 @@ case_opener_height = 1.4;
 // USB-Anschluss
 // offsets relativ zur Platine
 usb_connector_offset_right = 18;
-usb_connector_offset_bottom = 12;
+usb_connector_offset_bottom = 13;
 usb_connector_width = 8;
 usb_connector_height = 3;
 
 // Stromversorgung Anschluss
 // offsets relativ zur Platine
-battery_connector_offset_back = 4; // TODO: messen
-battery_connector_offset_bottom = 1; // TODO: messen
-battery_connector_width = 6; // TODO: messen
-battery_connector_height = 2; // TODO: messen
+battery_connector_offset_back = 4.6;
+battery_connector_offset_bottom = 2;
+battery_connector_width = 5.4;
+battery_connector_height = 2.7;
 
 //
 // berechnete Parameter
@@ -84,7 +81,7 @@ circuit_board_width_inset = circuit_board_width + 2*case_wall_inset;
 circuit_board_length_top_2 = circuit_board_length - circuit_board_length_top_1;
 circuit_board_length_top_2_inset = circuit_board_length_top_2 + case_wall_inset;
 
-circuit_board_holder_diameter = circuit_board_hole_diameter - 0.2;
+circuit_board_holder_diameter = circuit_board_hole_diameter - 0.3;
 circuit_board_holder_offset = circuit_board_hole_offset + 0.1;
 circuit_board_holder_hole_diameter = circuit_board_holder_diameter + 0.2; // fixate the board but do not connect too hard
 circuit_board_holder_hole_offset = circuit_board_hole_offset + 0.05;
@@ -102,7 +99,7 @@ case_height_lower = circuit_top + circuit_board_height;
 case_height_upper_1 = circuit_height_above_board_1 + case_wall_inset + case_wall_thickness;
 case_height_upper_2 = circuit_height_above_board_2 + case_wall_inset + case_wall_thickness;
 
-hole_stand_size = case_wall_inset + circuit_board_hole_diameter + circuit_board_hole_offset * 2;
+hole_stand_size = case_wall_inset + circuit_board_hole_diameter + circuit_board_hole_offset * 1.4;
 hole_pillar_diameter = circuit_board_hole_diameter * 0.9;
 
 button_radius = button_diameter / 2;
@@ -124,7 +121,7 @@ if (render_bottom) {
         // lower layer cutout
         translate([case_wall_thickness, case_wall_thickness, case_wall_thickness]) {
             linear_extrude(case_height_lower + circuit_board_height + 1) {
-                lower_layer_cutout_2d();
+                lower_layer_cutout_2d(false);
             }
         }
 
@@ -236,7 +233,6 @@ if (render_top_2) {
             
             // main cutout
             translate([- circuit_board_length_top_1, case_wall_thickness, -1])
-                //cube([circuit_board_length_top_2_inset + 1, circuit_board_width_inset, circuit_height_above_board_2 + 1]);
             linear_extrude(circuit_height_above_board_2 + 1)
                 lower_layer_cutout_2d();
 
@@ -245,7 +241,7 @@ if (render_top_2) {
             // back wall cutouts
             translate([case_length_top_2 - case_wall_thickness - 1, 0, -1]) {
                 // usb connector cutout
-                translate([0, usb_connector_offset_right, usb_connector_offset_bottom])
+                translate([0, usb_connector_offset_right + case_wall_thickness + case_wall_inset, usb_connector_offset_bottom])
                     cube([case_wall_thickness + 2, usb_connector_width, usb_connector_height + 1]);
 
                 // case opener cutout
@@ -256,7 +252,8 @@ if (render_top_2) {
             translate([circuit_board_length_top_2 - battery_connector_offset_back - battery_connector_width, 
                         case_width - case_wall_thickness - 1, 
                         battery_connector_offset_bottom]) {
-                cube([battery_connector_width, case_wall_thickness + 2, battery_connector_height]);
+                translate([0, -hole_stand_size, 0])
+                    cube([battery_connector_width, case_wall_thickness + hole_stand_size + 2, battery_connector_height]);
                             
                 // +/- sign
                 translate([0, case_wall_thickness+2, -0.5]) {
@@ -300,7 +297,9 @@ module case_opener_cutout() {
     }
 }
 
-module lower_layer_cutout_2d() {
+module lower_layer_cutout_2d(top = true) {
+    // inset wegen Platz für den ESP
+    bottom_left_inset_factor = top ? 0.7 : 1;
     polygon([
         // bottom left
         [hole_stand_size, 0], 
@@ -312,8 +311,8 @@ module lower_layer_cutout_2d() {
         [hole_stand_size, circuit_board_width_inset],
         // top right
         [circuit_board_length_inset - hole_stand_size, circuit_board_width_inset], 
-        [circuit_board_length_inset - hole_stand_size, circuit_board_width_inset - hole_stand_size], 
-        [circuit_board_length_inset + board_overhang, circuit_board_width_inset - hole_stand_size],
+        [circuit_board_length_inset - hole_stand_size, circuit_board_width_inset - hole_stand_size*bottom_left_inset_factor], 
+        [circuit_board_length_inset + board_overhang, circuit_board_width_inset - hole_stand_size*bottom_left_inset_factor],
         // bottom right
         [circuit_board_length_inset + board_overhang, hole_stand_size], 
         [circuit_board_length_inset - hole_stand_size, hole_stand_size], 
@@ -328,11 +327,8 @@ module upper_case_connectors(negative = false) {
 }
 
 module upper_case_connector(negative) {
-    ci = upper_case_connector_inset;
-    cd = case_wall_thickness / 2;
+    cd = case_wall_thickness*0.95;
     no = negative ? 1 : 0; // negative_offset
-    translate([-no, 0, -no]) linear_extrude(case_height_upper_1 + no)
-        polygon([
-            [0, ci*2], [cd + no, ci*2], [cd + no, ci], [cd*2 + no, ci],
-            [cd*2 + no, case_wall_thickness - ci], [cd + no, case_wall_thickness - ci], [cd + no, case_wall_thickness - ci*2], [0, case_wall_thickness - ci*2]]);
+    translate([-no, -no/2, -no]) linear_extrude(case_height_upper_1 + no)
+        square([cd+no, cd+no]);
 }
