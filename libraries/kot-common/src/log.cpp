@@ -2,7 +2,7 @@
 
 #include "log.h"
 
-#define ENABLE_LOGGING true
+#define ENABLE_LOGGING false
 
 void log(const char *message)
 {
