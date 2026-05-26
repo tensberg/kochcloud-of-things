@@ -56,9 +56,9 @@ def publish_robot_message_handler():
         topic = kebabcase(message_type).replace('-state', '/state')
         message_body = json_format.MessageToJson(getattr(message, message_type), always_print_fields_with_no_presence=True)
         print('received publish message from robot for topic {}'.format(topic))
-        mqtt_publish(topic, message_body)
     except Exception as e:
         print('failed to unpack message from robot: {}'.format(e))
+    mqtt_publish(topic, message_body)
 
 def mqtt_subscribe():
     mqtt_subscribe_robot()
@@ -159,6 +159,10 @@ def mqtt_connect_handler(client, userdata, flags, rc):
     publish_homeassistant_discovery()
     send_reset_to_robot()
 
+def mqtt_disconnect_handler(client, userdata, rc):
+    # raise an exception to exit the main loop to let the systemd service restart the gateway and re-initialize the robot-gateway communication
+    raise Exception('disconnected from MQTT server with result code {}'.format(rc))
+
 def mqtt_message_handler(client, userdata, msg):
     if msg.topic == MQTT_HOMEASSISTANT_STATUS_TOPIC:
         if msg.payload.decode('utf-8') == MQTT_HOMEASSISTANT_STATUS_ONLINE:
@@ -179,7 +183,7 @@ def init_mqtt():
     global mqttc
     mqttc = mqtt.Client(client_id=MQTT_CLIENT)
     mqttc.on_connect = mqtt_connect_handler
-    mqttc.on_disconnect = lambda client, userdata, rc: print('disconnected from MQTT server with result code {}'.format(rc))
+    mqttc.on_disconnect = mqtt_disconnect_handler
     mqttc.on_message = mqtt_message_handler
     mqttc.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqttc.connect(MQTT_SERVER)
