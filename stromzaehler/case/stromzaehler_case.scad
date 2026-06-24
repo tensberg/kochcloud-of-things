@@ -3,7 +3,7 @@
 $fn = 50;
 
 // Entwicklungs-Parameter
-render_bottom = true;
+render_bottom = false;
 render_top_1 = true;
 render_top_2 = true;
 render_exploded = true;
@@ -33,8 +33,8 @@ circuit_board_holder_height = 3.5;
 // Bauelemente
 
 // Druckknopf
-button_diameter = 13;
-button_offset_front = 1.6;
+button_diameter = 14;
+button_offset_front = 1.1;
 button_offset_right = 9;
 
 // ESP
@@ -45,7 +45,7 @@ board_overhang = 4;
 // Abstand vom Platinenrand
 connector_offset_left = 7;
 connector_offset_right = 2;
-connector_width = 8;
+connector_width = 8.4;
 
 // LEDs
 led_diameter = 5.5;
@@ -66,9 +66,9 @@ usb_connector_height = 3;
 
 // Stromversorgung Anschluss
 // offsets relativ zur Platine
-battery_connector_offset_back = 5;
+battery_connector_offset_back = 4;
 battery_connector_offset_bottom = 2;
-battery_connector_width = 5.4;
+battery_connector_width = 6;
 battery_connector_height = 2.7;
 
 //
