@@ -68,6 +68,9 @@ void setStromzaehlerData(robobuf_StromzaehlerData& mqttData, bool& hasData, Stro
         power.feedInSumWh = data.feedInSumWh;
         power.currentW = data.powerCurrentW;
     }
+    mqttData.has_measurement = true;
+    robobuf_PowerMeasurementData& measurement = mqttData.measurement;
+    measurement.measurementTimeMs = data.measurementTimeMs;
 }
 
 void StromzaehlerDevice::createMqttMessage(robobuf_RobotToGatewayMessage& mqttMessage) {

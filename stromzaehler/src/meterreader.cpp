@@ -64,7 +64,7 @@ void MeterReader::setup(int ledPin)
   log("meter setup finished");
 }
 
-boolean MeterReader::read(int timeoutMs, MeterReading &reading)
+boolean MeterReader::read(unsigned long timeoutMs, MeterReading &reading)
 {
   bool messageRead = false;
 
@@ -75,9 +75,10 @@ boolean MeterReader::read(int timeoutMs, MeterReading &reading)
   digitalWrite(vccPin, HIGH);
   this->input.listen();
   this->input.flush();
-  unsigned long timeoutEnd = millis() + timeoutMs;
+  unsigned long measurementStart = millis();
+  unsigned long measurementTimeMs;
 
-  while (millis() < timeoutEnd)
+  while ((measurementTimeMs = millis()-measurementStart) < timeoutMs)
   {
     int b = this->input.read();
     if (b == -1)
@@ -95,6 +96,8 @@ boolean MeterReader::read(int timeoutMs, MeterReading &reading)
       yield();
     }
   }
+
+  reading.measurementTimeMs = measurementTimeMs;
 
   digitalWrite(vccPin, LOW);
   return messageRead;

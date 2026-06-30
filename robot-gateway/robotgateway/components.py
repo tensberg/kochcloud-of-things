@@ -199,7 +199,17 @@ def create_power_sensors(meter, meter_name):
     return [
         PowerSum(meter, meter_name),
         FeedInPowerSum(meter, meter_name),
-        PowerCurrent(meter, meter_name)
+        PowerCurrent(meter, meter_name),
+        Sensor(
+            id="status_{}_measurement_time_ms".format(meter),
+            name="Status - {} Messzeit".format(meter),
+            device_class="duration",
+            unit_of_measurement="s",
+            value_path="{}.measurement.measurementTimeMs".format(meter),
+            suggested_display_precision=0,
+            state_class="total",
+            diagnostic=True
+        ),
     ]
 
 def create_status_sensors():

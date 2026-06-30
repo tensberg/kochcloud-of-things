@@ -7,6 +7,7 @@ typedef struct __attribute__((__packed__)) {
     double powerSumWh;
     double powerCurrentW;
     double feedInSumWh;
+    uint64_t measurementTimeMs;
 } StromzaehlerData;
 
 typedef struct __attribute__((__packed__)) {

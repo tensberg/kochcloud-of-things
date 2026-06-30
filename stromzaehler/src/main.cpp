@@ -8,7 +8,7 @@
 #include "persistentstatus.h"
 #include <messagesender.h>
 
-#define METER_READ_TIMEOUT_MILLIS 5E3
+#define METER_READ_TIMEOUT_MILLIS 5E3L
 #define SLEEP_BETWEEN_MEASUREMENTS_MICROS 5*60E6
 
 // reader configuration
@@ -37,6 +37,7 @@ void signalContinuousMode()
 void updateReadingResult(StromzaehlerData &data, const MeterReading &reading, boolean readSuccess)
 {
   data.readSuccess = readSuccess;
+  data.measurementTimeMs = reading.measurementTimeMs;
   if (readSuccess)
   {
     data.powerSumWh = reading.powerSumWh;

@@ -10,8 +10,13 @@ message PowerData {
     double currentW = 2;
 }
 
+message PowerMeasurementData {
+    uint64 measurementTimeMs = 1;
+}
+
 message StromzaehlerData {
     PowerData power = 1;
+    PowerMeasurementData measurement = 2;
 }
 
 message StromzaehlerConfig {

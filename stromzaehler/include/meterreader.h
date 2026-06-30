@@ -7,6 +7,7 @@ typedef struct
     double powerSumWh;
     double feedInSumWh;
     double powerCurrentW;
+    uint64_t measurementTimeMs;
 } MeterReading;
 
 class MeterReader
@@ -15,7 +16,7 @@ public:
     MeterReader(int rxPin, int vccPin);
 
     void setup(int ledPin);
-    boolean read(int timeoutMs, MeterReading &reading);
+    boolean read(unsigned long timeoutMs, MeterReading &reading);
 
 private:
     int vccPin;
