@@ -32,6 +32,9 @@
 			"cmath": "cpp",
 			"*.ipp": "cpp",
 			"device_status.pb.h": "c"
+		},
+		"files.watcherExclude": {
+			"**/target/**": true
 		}
 	}
 }
