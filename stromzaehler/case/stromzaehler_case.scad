@@ -5,7 +5,7 @@ $fn = 50;
 // Entwicklungs-Parameter
 render_bottom = false;
 render_top_1 = true;
-render_top_2 = true;
+render_top_2 = false;
 render_exploded = true;
 
 //
@@ -19,7 +19,7 @@ circuit_board_length = 60;
 circuit_board_length_top_1 = 29;
 circuit_board_width = 40;
 circuit_board_height = 1.6;
-circuit_height_above_board_1 = 7.2 - case_wall_thickness;
+circuit_height_above_board_1 = 7.7 - case_wall_thickness;
 circuit_height_above_board_2 = 16;
 circuit_height_below_board = 4;
 
@@ -35,7 +35,7 @@ circuit_board_holder_height = 3.5;
 // Druckknopf
 button_diameter = 14;
 button_offset_front = 1.1;
-button_offset_right = 9;
+button_offset_right = 8;
 
 // ESP
 // soviel steht der ESP über die Platine hinaus
@@ -45,7 +45,7 @@ board_overhang = 4;
 // Abstand vom Platinenrand
 connector_offset_left = 7;
 connector_offset_right = 2;
-connector_width = 8.4;
+connector_width = 8.8;
 
 // LEDs
 led_diameter = 5.5;
@@ -70,6 +70,12 @@ battery_connector_offset_back = 4;
 battery_connector_offset_bottom = 2;
 battery_connector_width = 6;
 battery_connector_height = 2.7;
+
+// Halterung Gehäuse auf Batteriefach
+battery_case_height = 20;
+battery_case_holder_thickness = 1;
+battery_case_holder_width = 18;
+battery_case_holder_overlap = 4;
 
 //
 // berechnete Parameter
@@ -104,6 +110,8 @@ hole_pillar_diameter = circuit_board_hole_diameter * 0.9;
 
 button_radius = button_diameter / 2;
 led_radius = led_diameter / 2;
+
+battery_case_holder_height = battery_case_holder_overlap + case_height_lower + battery_case_height + battery_case_holder_thickness;
 
 // Rendering-Parameter
 rotate_top = [render_exploded ? 180 : 0, 0, 0];
@@ -284,6 +292,13 @@ if (render_top_2) {
         translate([0, case_width - case_wall_thickness- case_wall_inset - connector_offset_right, 
                    case_height_upper_1 - case_wall_thickness])
             cube([case_wall_thickness, connector_offset_right + case_wall_inset, opening_wall_height]);
+        
+        // battery case holder
+        translate([case_length_top_2, (case_width - battery_case_holder_width)/2, -(battery_case_holder_height - battery_case_holder_overlap)]) {
+            cube([battery_case_holder_thickness, battery_case_holder_width, battery_case_holder_height]);
+            translate([-battery_case_holder_thickness, 0, 0])
+                cube([battery_case_holder_thickness, battery_case_holder_width, battery_case_holder_thickness]);
+        }
     }
         
 }
